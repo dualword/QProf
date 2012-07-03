@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="buttons">
+    <file>paypal.png</file>
+  </qresource>
+</RCC>

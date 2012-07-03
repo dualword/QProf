@@ -1,0 +1,2 @@
+//const char *version = "@DESCRIBE_STRING@";
+const string version = "@DESCRIBE_STRING@";
