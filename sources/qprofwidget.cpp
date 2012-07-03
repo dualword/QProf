@@ -1,7 +1,8 @@
 /*
  * qprofwidget.cpp
  *
- * $Id: qprofwidget.cpp,v 1.56 2004/07/03 06:03:50 bab Exp $
+ *
+ * $Id: ported from kprofwidget.cpp,v 1.56 2004/07/03 06:03:50 bab Exp $
  *
  * Copyright (c) 2000-2001 Florent Pillet <fpillet@users.sourceforge.net>
  *
@@ -67,7 +68,7 @@
 #include "./includes/qprofwidget.h"
 #include "./includes/cprofileviewitem.h"
 #include "./includes/ctidyup.h"
-#include "./includes/popup_menu.h"
+// #include "./includes/popup_menu.h"
 
 #include "./includes/dotCallGraph.h"
 #include "./includes/vcgCallGraph.h"
@@ -106,15 +107,15 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 
     setupUi ( this );
 
-    QUuid uid;
-    uid.createUuid();
+    qsrand( time (NULL));
+    int randomZahl = qrand();
     sLastFileFormat = FORMAT_GPROF;
 
     mAbbrevTemplates = false;
 
     initColFields();
 
-    processName = "/tmp/QProf_" + uid.toString() + "/";
+    processName = "/tmp/QProf_" + QString::number(randomZahl) + "/";
     QDir().mkdir(processName);
 
 // flatfilter disabled. Eduard
@@ -1067,7 +1068,7 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
     QTreeWidget * wd = (QTreeWidget *)sender();
     QTreeWidgetItem* listItem;
 
-    if(wd->topLevelItemCount() <= 1 ) {
+    if(wd->topLevelItemCount() < 1 ) {
         return;
     }
 
@@ -1084,10 +1085,6 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
         return;             // in objs profile, happens on class name lines
     }
 
-    Frame* pop = new Frame(mTabs);
-    pop->resize(150, 100);
-
-
     QVector<CProfileInfo *> itemProf;
     itemProf.resize (info->callers.count () + info->called.count ());
     uint n = 0;
@@ -1097,55 +1094,38 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
         return;
     }
 
-    QLayout *l = pop->layout();
-    l->setMargin(0);
+    QPoint globalPos = wd->mapToGlobal(iPoint);
+    QWidget* popup = new QWidget(this, Qt::Popup);
+    popup->move(globalPos);
+//     popup->setWindowTitle("trulalay");
 
-    // add callers to the pop-up menu
-    if (info->callers.count ()) {
-        QLabel *lab = new QLabel(pop->contentWidget());
-        lab->setText("Called By:");
-        l->addWidget(lab);
-//         pop->titleBar()->setWindowTitle(tr ("Called By:"));
+    QVBoxLayout *layout = new QVBoxLayout;
+    QLabel* lab1=new QLabel("Called by:");
+    lab1->setAlignment(Qt::AlignCenter);
+    lab1->setFrameStyle(QFrame::Panel);
+    layout->addWidget(lab1);
 
-        for (uint i = 0; i < info->callers.count (); i++) {
-            CProfileInfo *p = info->callers[i];
-            QLabel *lab = new QLabel(pop->contentWidget());
-            lab->setText(p->name);
-            l->addWidget(lab);
-
-//             pop->inseinsertItem (p->name, n);
-            itemProf[n++] = p;
-        }
+    for (uint i = 0; i < info->callers.count (); i++) {
+        CProfileInfo *p = info->callers[i];
+        QLabel *lab = new QLabel(p->name);
+        layout->addWidget(lab);
+        itemProf[n++] = p;
     }
 
-    // add called functions to the popup menu
-    if (info->called.count ()) {
-        QLabel *lab = new QLabel(pop->contentWidget());
-        lab->setText("Calls:");
-        l->addWidget(lab);
-//         pop.insertTitle (tr ("Calls:"));
+    QLabel* lab2=new QLabel("Calls:");
+    lab2->setAlignment(Qt::AlignCenter);
+    lab2->setFrameStyle(QFrame::Panel);
+    layout->addWidget(lab2);
+    for (uint i = 0; i < info->called.count (); i++) {
+        CProfileInfo *p = info->called[i];
 
-        for (uint i = 0; i < info->called.count (); i++) {
-            CProfileInfo *p = info->called[i];
-
-            QLabel *lab = new QLabel(pop->contentWidget());
-            lab->setText(p->name);
-            l->addWidget(lab);
-//             pop.insertItem (p->name, n);
-            itemProf[n++] = p;
-        }
+        QLabel *lab = new QLabel(p->name);
+        layout->addWidget(lab);
+        itemProf[n++] = p;
     }
 
-// deactivated. eduard
-#if 0
-    int sel = pop->show();
-
-    if (sel != -1) {
-        selectProfileItem (itemProf[sel]);
-    }
-
-#endif
-
+    popup->setLayout(layout);
+    popup->show();
 }
 
 #if 0
