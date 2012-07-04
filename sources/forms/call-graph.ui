@@ -7,39 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>331</width>
-    <height>309</height>
+    <height>224</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Generate Call Graph</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="Q3ButtonGroup" name="ButtonGroup2">
-     <property name="title">
-      <string>Graph File Format</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QRadioButton" name="mVCG">
-        <property name="text">
-         <string>VCG</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="mGraphViz">
-        <property name="text">
-         <string>GraphViz</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="Q3ButtonGroup" name="ButtonGroup1_2">
      <property name="title">

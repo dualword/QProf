@@ -12,7 +12,6 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/aboutform.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_gprof.cpp
-		    ${CMAKE_CURRENT_SOURCE_DIR}/vcgCallGraph.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/clientsidemap.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/cprofileviewitem.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/dotCallGraph.cpp
@@ -37,7 +36,6 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/Log.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_fnccheck.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/includes/vcgCallGraph.h
                 PARENT_SCOPE)
 
 

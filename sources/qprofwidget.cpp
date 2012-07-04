@@ -71,7 +71,7 @@
 // #include "./includes/popup_menu.h"
 
 #include "./includes/dotCallGraph.h"
-#include "./includes/vcgCallGraph.h"
+// #include "./includes/vcgCallGraph.h"
 #include "./includes/aboutform.h"
 #include "./includes/clientsidemap.h"
 #include "./includes/parseprofile_gprof.h"
@@ -1097,33 +1097,37 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
     QPoint globalPos = wd->mapToGlobal(iPoint);
     QWidget* popup = new QWidget(this, Qt::Popup);
     popup->move(globalPos);
-//     popup->setWindowTitle("trulalay");
 
     QVBoxLayout *layout = new QVBoxLayout;
-    QLabel* lab1=new QLabel("Called by:");
-    lab1->setAlignment(Qt::AlignCenter);
-    lab1->setFrameStyle(QFrame::Panel);
-    layout->addWidget(lab1);
+    if (info->callers.count ()>0){
+        QLabel* lab1=new QLabel("Called by:");
+        lab1->setAlignment(Qt::AlignCenter);
+        lab1->setFrameStyle(QFrame::Panel);
+        layout->addWidget(lab1);
 
-    for (uint i = 0; i < info->callers.count (); i++) {
-        CProfileInfo *p = info->callers[i];
-        QLabel *lab = new QLabel(p->name);
-        layout->addWidget(lab);
-        itemProf[n++] = p;
+        for (uint i = 0; i < info->callers.count (); i++) {
+            CProfileInfo *p = info->callers[i];
+            QLabel *lab = new QLabel(p->name);
+            layout->addWidget(lab);
+            itemProf[n++] = p;
+        }
     }
+    
+    if (info->called.count () > 0){
+        QLabel* lab2=new QLabel("Calls:");
+        lab2->setAlignment(Qt::AlignCenter);
+        lab2->setFrameStyle(QFrame::Panel);
+        layout->addWidget(lab2);
+    
+        for (uint i = 0; i < info->called.count (); i++) {
+            CProfileInfo *p = info->called[i];
 
-    QLabel* lab2=new QLabel("Calls:");
-    lab2->setAlignment(Qt::AlignCenter);
-    lab2->setFrameStyle(QFrame::Panel);
-    layout->addWidget(lab2);
-    for (uint i = 0; i < info->called.count (); i++) {
-        CProfileInfo *p = info->called[i];
-
-        QLabel *lab = new QLabel(p->name);
-        layout->addWidget(lab);
-        itemProf[n++] = p;
+            QLabel *lab = new QLabel(p->name);
+            layout->addWidget(lab);
+            itemProf[n++] = p;
+        }
     }
-
+    
     popup->setLayout(layout);
     popup->show();
 }
@@ -1277,6 +1281,7 @@ void QProfWidget::generateCallGraph ()
     // Display the call-graph format selection dialog and generate a
     // call graph
     CCallGraph* dialog = new CCallGraph();
+//     setupUi(dialog);
 
     if (dialog->exec ()) {
         bool currentSelectionOnly = dialog->mSelectedFunction->isChecked ();
@@ -1296,8 +1301,7 @@ void QProfWidget::generateCallGraph ()
         }
 
         if (dialog->mSaveFile->isChecked() ) {
-            QString dotfile = QFileDialog::getSaveFileName ( this,  tr ("Save call-graph as..."),
-                              dialog->mGraphViz->isChecked () ? tr("*.dot|GraphViz files") : tr("*.vcg|VCG files"));
+            QString dotfile = QFileDialog::getSaveFileName ( this,  tr ("Save call-graph as..."), tr("*.dot|GraphViz files"));
 
             if (dotfile.isEmpty ()) {
 
@@ -1347,22 +1351,14 @@ void QProfWidget::generateCallGraph ()
             }
 
             // graph generation
-            if (dialog->mGraphViz->isChecked ()) {
-                DotCallGraph dotCallGraph(file, currentSelectionOnly, false, mProfile, processName, mColorConfigure->highColour());
-            } else {
-                VCGCallGraph vcgCallGraph(file, currentSelectionOnly, mProfile);
-            }
+            DotCallGraph dotCallGraph(file, currentSelectionOnly, false, mProfile, processName, mColorConfigure->highColour());
 
             file.close ();
         } else {
             //Generate a temporary file
             QFile file;
 
-            if (dialog->mGraphViz->isChecked ()) {
-                file.setFileName(".graphViz_temp");
-            } else {
-                file.setFileName(".vcg_temp");
-            }
+            file.setFileName(".graphViz_temp");
 
             file.open(QIODevice::ReadWrite);
 
@@ -1372,41 +1368,31 @@ void QProfWidget::generateCallGraph ()
             }
 
             // graph generation
-            if (dialog->mGraphViz->isChecked ()) {
-                DotCallGraph dotCallGraph(file, currentSelectionOnly, true, mProfile, processName, mColorConfigure->highColour());
-            } else {
-                VCGCallGraph vcgCallGraph(file, currentSelectionOnly, mProfile);
-            }
+            DotCallGraph dotCallGraph(file, currentSelectionOnly, true, mProfile, processName, mColorConfigure->highColour());
 
             file.close ();
 
             QString graphApplicationName = "";
             QStringList graphParams;
 
-            if (dialog->mGraphViz->isChecked ()) {
-                graphApplicationName = "dot";
-                graphParams << file.fileName() << "-Timap" ;
+            graphApplicationName = "dot";
+            graphParams << file.fileName() << "-Timap" ;
 //                 displayApplication << "dot" << file.fileName() << "-Tjpg" << "-o" << ".graphViz.jpg";
 
-                connect (&graphApplication, SIGNAL (readyReadStandardOutput ()), this, SLOT (graphVizStdout ()));
-                connect (&graphApplication, SIGNAL (readyReadStandardError()), this, SLOT (graphVizStderr ()));
+            connect (&graphApplication, SIGNAL (readyReadStandardOutput ()), this, SLOT (graphVizStdout ()));
+            connect (&graphApplication, SIGNAL (readyReadStandardError()), this, SLOT (graphVizStderr ()));
 
-                graphApplication.execute(graphApplicationName, graphParams);
-                graphParams.clear();
-                graphParams << file.fileName() << "-Tjpg" << "-o" << ".graphViz.jpg";
-                displayApplication.execute(graphApplicationName, graphParams);
+            graphApplication.execute(graphApplicationName, graphParams);
+            graphParams.clear();
+            graphParams << file.fileName() << "-Tjpg" << "-o" << ".graphViz.jpg";
+            displayApplication.execute(graphApplicationName, graphParams);
 
-                QFile mapFile;
-                QTextStream text (&mGraphVizStdout, QIODevice::ReadOnly);
+            QFile mapFile;
+            QTextStream text (&mGraphVizStdout, QIODevice::ReadOnly);
 
-                mapFile.setFileName("./.qprof.html");
-                mapFile.open(QIODevice::ReadWrite);
-                ClientSideMap(text, mapFile, processName);
-            } else {
-                graphApplicationName = "xvcg";
-                graphParams <<  file.fileName() ;
-                graphApplication.execute(graphApplicationName, graphParams);
-            }
+            mapFile.setFileName("./.qprof.html");
+            mapFile.open(QIODevice::ReadWrite);
+            ClientSideMap(text, mapFile, processName);
 
             if (graphApplication.exitCode () || graphApplication.exitStatus ()) {
                 QString text = graphApplicationName + tr (" could not display the data.\n");
