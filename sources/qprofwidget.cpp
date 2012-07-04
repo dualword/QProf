@@ -154,6 +154,10 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 //     actionAbout_Qt->setIcon(QIcon::fromTheme("about-qt"));
     connect (actionAbout_Qt, SIGNAL (triggered ()), this, SLOT (aboutQt ()));
 
+    connect(mCallTree, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
+     
+    connect(mMethod, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
+
 
     mFlat->setContextMenuPolicy(Qt::CustomContextMenu);
     connect (mFlat, SIGNAL (customContextMenuRequested(const QPoint&)), this, SLOT (profileEntryRightClick(const  QPoint&)));
@@ -169,10 +173,6 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     actionAbbreviate_C_Templates->setCheckable(true);
 
     // add some help on items
-//     QWhatsThis::add (flatFilter,
-//                      tr (  "Type text in this field to filter the display "
-//                            "and only show the functions/methods whose name match the text."));
-
     mFlat->setWhatsThis(tr ("This is the <I>flat view</I>.\n\n"
                             "It displays all functions and method 'flat'. Click on a column header "
                             "to sort the list on this column (click a second time to reverse the "
@@ -264,6 +264,15 @@ void QProfWidget::configure()
     mColorConfigure->chooseGraphHighColour();
 }
 
+
+
+//Captures the URL clicked signal from the call tree HTML widget and
+//opens the required URL in the method widget.
+void QProfWidget::openURLRequestDelayed( const QUrl &url)
+{
+     mMethod->setSource(url);
+//     mMethod->openURL(url);
+}
 
 void QProfWidget::prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler)
 {
@@ -638,6 +647,8 @@ void QProfWidget::createToolBars()
     QLineEdit *flatFilter = new QLineEdit(filterToolBar);
     QSize sz = flatFilter->baseSize();
     flatFilter->setMaximumWidth(300);
+    flatFilter->setWhatsThis( tr (  "Type text in this field to filter the display "
+                           "and only show the functions/methods whose name match the text."));
 
     filterToolBar->addWidget(lab);
 //     filterToolBar->addWidget (new QSpacer(10, 10));

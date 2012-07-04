@@ -168,6 +168,7 @@ class QProfWidget : public QMainWindow, public Ui_MainWindow
         void prepareHtmlPart(QTextBrowser* part);
         bool parseArguments(const QStringList &args, QString& fileName, short& prof);
         void addRecentFile (const QUrl&);
+        void openURLRequestDelayed( const QUrl &url);
         void fillFlatProfileList ();
         void hideFlatProfileList ();
         void fillHierProfileList ();
