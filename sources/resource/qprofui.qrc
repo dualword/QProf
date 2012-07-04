@@ -1,11 +1,10 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="buttons">
     <file>paypal.png</file>
-    <file>copy.png</file>
-    <file>cut.png</file>
-    <file>new.png</file>
-    <file>open.png</file>
-    <file>paste.png</file>
-    <file>save.png</file>
+    <file>diff.xpm</file>
+    <file>io32-app-qprof.xpm</file>
+    <file>new.xpm</file>
+    <file>open.xpm</file>
+    <file>save.xpm</file>
   </qresource>
 </RCC>

@@ -609,10 +609,10 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
             } else if (profiler == "fnccheck") {
                 prof = FORMAT_FNCCHECK;
                 success = true;
-            } else if (profiler == "pose") {
+            } /*else if (profiler == "pose") {
                 prof = FORMAT_POSE;
                 success = true;
-            } else {
+            } */else {
 //                 usage();
                 success = false;
             }
