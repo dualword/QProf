@@ -1,15 +1,11 @@
 /*
  * main.cpp
  *
- * $Id: main.cpp,v 1.11 2002/10/29 21:52:14 cdesmond Exp $
- *
+ * Copyright (c) 2012 Eduard Kalinowski <karbofos@ymail.com>
  * Copyright (c) 2000 Florent Pillet <florent.pillet@wanadoo.fr>
  *
  * Requires the Qt widget libraries, available at no cost at
  * http://www.trolltech.com/
- *
- * Requires the K Desktop Environment 2.0 (KDE 2.0) libraries, available
- * at no cost at http://www.kde.org/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,8 +28,6 @@
 #include <QtGui>
 #include <QSplashScreen>
 
-// #include <kcmdlineargs.h>
-// #include "../includes/config.h"
 #include "./includes/qprof.h"
 #include "./includes/Log.h"
 #include "./includes/qprofwidget.h"
@@ -41,12 +35,6 @@
 
 
 static const char *description = "Execution profile results analysis utility";
-
-// static KCmdLineOptions options[] = {
-//     { "f ", I18N_NOOP("file to open"), 0 },
-//     { "p ", I18N_NOOP("profiler used - one of <gprof, fnccheck, pose>"), 0},
-//     { 0, 0, 0 }
-// };
 
 
 int main(int argc, char **argv)

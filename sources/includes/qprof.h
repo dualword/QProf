@@ -1,15 +1,11 @@
 /*
  * kprof.h
  *
- * $Id: kprof.h,v 1.12 2002/10/29 21:50:45 cdesmond Exp $
- *
+ * Copyright (c) 2012 Eduard Kalinowski <karbofos@ymail.com>
  * Copyright (c) 2000 Florent Pillet <florent.pillet@wanadoo.fr>
  *
  * Requires the Qt widget libraries, available at no cost at
  * http://www.trolltech.com/
- *
- * Requires the K Desktop Environment 3.0 (KDE 3.0) libraries, available
- * at no cost at http://www.kde.org/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

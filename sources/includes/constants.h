@@ -1,15 +1,10 @@
 /*
  * consts.h
  *
- * $Id: consts.h,v 0.9 2012
- *
- * Copyright (c) 2000-2001 Florent Pillet <fpillet@users.sourceforge.net>
+ * Copyright (c) 2012 Eduard Kalinowski <karbofos@ymail.com>
  *
  * Requires the Qt widget libraries, available at no cost at
  * http://www.trolltech.com/
- *
- * Requires the K Desktop Environment 2.0 (KDE 2.0) libraries or later,
- * available at no cost at http://www.kde.org/
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

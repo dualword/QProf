@@ -1,6 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2008-2009 by Amine Roukh       <amineroukh@gmail.com>   *
- *   Copyright (C) 2009 by Eduard Kalinowski      <e-h-s@arcor.de>         *
+ *   Copyright (C) 2012 by Eduard Kalinowski      <karbofos@ymail.com>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
