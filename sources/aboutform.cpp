@@ -21,13 +21,14 @@
 #include <QUrl>
 #include "ui_aboutForm.h"
 #include "./includes/aboutform.h"
+#include "./includes/constants.h"
 
 aboutForm::aboutForm(QWidget* parent, Qt::WFlags fl)
     : QDialog( parent, fl ), Ui::aboutDialog()
 {
     setupUi(this);
 
-    logoText->setText ( tr ( "<h3>QProfiler 0.9.0</h3>" ) );
+    logoText->setText ( QString( "<h3>" + QString(PROGRAM_NAME) + "</h3>" ) );
 
     connect ( cancelButton, SIGNAL ( clicked() ), this, SLOT ( reject() ) );
     connect ( toolButton, SIGNAL ( clicked() ), this, SLOT ( onPayPal() ) );

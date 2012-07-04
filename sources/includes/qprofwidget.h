@@ -54,9 +54,6 @@
 #include <QFile>
 class CProfileViewItem;
 
-#define PROGRAM_NAME "QProfiler v.0.9.0"
-#define PROGRAM_VERSION "<b>v.0.9.0 (5 july 2012)</b>"
-
 
 #ifdef HAVE_LIBQTREEMAP
 class QTreeWidgetTreeMapWindow;
@@ -175,6 +172,7 @@ class QProfWidget : public QMainWindow, public Ui_MainWindow
         bool parseArguments(const QStringList &args, QString& fileName, short& prof);
         void addRecentFile (const QUrl&);
         void fillFlatProfileList ();
+        void hideFlatProfileList ();
         void fillHierProfileList ();
         void fillHierarchy (CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count);
         void fillObjsProfileList ();

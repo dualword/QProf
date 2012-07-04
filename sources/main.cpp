@@ -37,6 +37,7 @@
 #include "./includes/qprof.h"
 #include "./includes/Log.h"
 #include "./includes/qprofwidget.h"
+#include "./includes/constants.h"
 
 
 static const char *description = "Execution profile results analysis utility";
@@ -102,7 +103,7 @@ int main(int argc, char **argv)
     QProfWidget * mw;
     mw = new QProfWidget(0, Qt::Window );
 //     mw->setLangGUI();
-    mw->setWindowTitle("QProf v.0.9.0");
+    mw->setWindowTitle(QString(PROGRAM_NAME));
 
     mw->show();
     return app.exec();

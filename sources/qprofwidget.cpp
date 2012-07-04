@@ -126,15 +126,15 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     connect (recentGroup, SIGNAL (triggered(QAction*)), this, SLOT (openRecentFile(QAction*)));
 
     setWindowIcon ( QIcon(appIcon));
-    
+
     prepareProfileView (mFlat, false, sLastFileFormat);
     actionOpen->setIcon(QIcon::fromTheme("document-open"));
     actionCompare->setIcon(QIcon::fromTheme("edit-copy"));
     actionPrint->setIcon(QIcon::fromTheme("printer"));
-    
+
     actionQuit->setIcon(QIcon::fromTheme("application-exit"));
     actionOpen_Recent->setIcon(QIcon::fromTheme("document-open-recent"));
-    
+
     connect (actionOpen, SIGNAL (triggered ()), this, SLOT (openResultsFile ()));
     connect (actionQuit, SIGNAL (triggered ()), this, SLOT (quit ()));
 //     connect (actionOpen_Recent, SIGNAL (triggered()), this, SLOT (openRecentFile()));
@@ -149,8 +149,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 #else
     connect (action_Display_TreeMap_View, SIGNAL (triggered ()), this, SLOT (displayTreeMapView ()));
 #endif
-   
-    
+
     connect (actionAbbreviate_C_Templates, SIGNAL (toggled(bool)), this, SLOT (toggleTemplateAbbrev (bool)));
     connect (actionSelect_Font, SIGNAL (triggered ()), this, SLOT (selectListFont ()));
     connect (action_Configure_KProf, SIGNAL (triggered ()), this, SLOT (configure ()));
@@ -637,17 +636,18 @@ void QProfWidget::createToolBars()
     fileToolBar->addAction(actionCompare);
     fileToolBar->addAction(actionPrint);
 
-// flatfilter disabled. Eduard
-//     QLineEdit *flatFilter = new QLineEdit (flatWidget);
-//     flatEditLayout->addWidget (new QLabel (i18n ("Filter:"), flatWidget));
-//     flatEditLayout->addItem (new QSpacerItem (10, 10));
-//     flatEditLayout->addWidget (flatFilter);
-    //     connect (flatFilter, SIGNAL (textChanged (const QString &)),
-//              this, SLOT (flatProfileFilterChanged (const QString &)));
-
     filterToolBar = addToolBar(tr("Filter"));
-//     filterToolBar->addAction(filterAct);
 
+    QLabel *lab =  new QLabel("Filter (flat profile): ");
+    QLineEdit *flatFilter = new QLineEdit(filterToolBar);
+    QSize sz = flatFilter->baseSize();
+    flatFilter->setMaximumWidth(300);
+
+    filterToolBar->addWidget(lab);
+//     filterToolBar->addWidget (new QSpacer(10, 10));
+    QAction *action = filterToolBar->addWidget(flatFilter);
+
+    connect (flatFilter, SIGNAL (textChanged (const QString &)), this, SLOT (flatProfileFilterChanged (const QString &)));
 }
 
 
@@ -1015,14 +1015,38 @@ void QProfWidget::initColFields()
 }
 
 
+void QProfWidget::hideFlatProfileList ()
+{
+    for(int i = 0; i < mFlat->topLevelItemCount(); ++i) {
+        mFlat->topLevelItem(i)->setHidden(false);
+    }
+
+    if (mFlatFilter.length() == 0) {
+        return;
+    }
+
+    for(int i = 0; i < mFlat->topLevelItemCount(); ++i) {
+        if (mFlat->topLevelItem(i)->text(0).indexOf(QRegExp(mFlatFilter)) == -1) {
+            mFlat->topLevelItem(i)->setHidden(true);
+        } else {
+            mFlat->topLevelItem(i)->setHidden(false);
+        }
+    }
+
+    for (int i = 2; i < mFlat->columnCount(); i++) {
+        mFlat->resizeColumnToContents(i);
+    }
+}
+
+
 void QProfWidget::fillFlatProfileList ()
 {
-    bool filter = ((mFlatFilter.isEmpty() == false) && (mFlatFilter.length() > 0));
+//     bool filter = ((mFlatFilter.isEmpty() == false) && (mFlatFilter.length() > 0));
 
     for (unsigned int i = 0; i < mProfile.size (); i++) {
-        if (filter && !mProfile[i].name.contains (mFlatFilter)) {
-            continue;
-        }
+//         if (filter && !mProfile[i].name.contains (mFlatFilter)) {
+//             continue;
+//         }
 
         CProfileViewItem *item =  new CProfileViewItem (mFlat, &mProfile[i]);
     }
@@ -1225,9 +1249,9 @@ void QProfWidget::selectItemInView (QTreeWidgetItem *item, CProfileInfo *info, b
 
 void QProfWidget::flatProfileFilterChanged (const QString &filter)
 {
-    mFlat->clear ();
+//     mFlat->clear ();
     mFlatFilter = filter;
-    fillFlatProfileList ();
+    hideFlatProfileList ();
 }
 
 void QProfWidget::doPrint ()

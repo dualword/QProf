@@ -1,7 +1,7 @@
 /*
  * consts.h
  *
- * $Id: kprofwidget.h,v 1.35 2004/06/19 05:18:55 bab Exp $
+ * $Id: consts.h,v 0.9 2012
  *
  * Copyright (c) 2000-2001 Florent Pillet <fpillet@users.sourceforge.net>
  *
@@ -28,6 +28,9 @@
 
 #ifndef __KPROFCONSTS_H__
 #define __KPROFCONSTS_H__
+
+#define PROGRAM_NAME "QProfiler v.0.9.1"
+#define PROGRAM_VERSION "<b>v.0.9.1 (5 july 2012)</b>"
 
 
 #define col_function_t                "Function/Method"
