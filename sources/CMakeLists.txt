@@ -8,7 +8,6 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/cprofileinfo.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/ctidyup.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/qprofwidget.cpp
-		    ${CMAKE_CURRENT_SOURCE_DIR}/popup_menu.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/aboutform.cpp
@@ -26,7 +25,6 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/constants.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/cprofileinfo.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/includes/popup_menu.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/ctidyup.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/qproffile.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/qprofwidget.h
