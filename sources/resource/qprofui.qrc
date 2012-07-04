@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="buttons">
-    <file>paypal.png</file>
+    <file>paypal.xpm</file>
     <file>lo32-app-qprof.xpm</file>
   </qresource>
 </RCC>

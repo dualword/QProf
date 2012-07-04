@@ -91,9 +91,8 @@ p, li { white-space: pre-wrap; }
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../resource/kprofui.qrc">
-           <normaloff>:/buttons/paypal.png</normaloff>
-           <normalon>:/buttons/paypal.png</normalon>:/buttons/paypal.png</iconset>
+          <iconset resource="../resource/qprofui.qrc">
+           <normaloff>:/buttons/paypal.xpm</normaloff>:/buttons/paypal.xpm</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -181,7 +180,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="../resource/kprofui.qrc"/>
+  <include location="../resource/qprofui.qrc"/>
  </resources>
  <connections/>
 </ui>

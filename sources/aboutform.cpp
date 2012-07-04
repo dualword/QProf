@@ -31,6 +31,7 @@ aboutForm::aboutForm(QWidget* parent, Qt::WFlags fl)
 
     connect ( cancelButton, SIGNAL ( clicked() ), this, SLOT ( reject() ) );
     connect ( toolButton, SIGNAL ( clicked() ), this, SLOT ( onPayPal() ) );
+    
 
     setWindowTitle ( tr ( "About QProfiler" ) );
 }
