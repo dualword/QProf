@@ -18,6 +18,10 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/qproffile.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_fnccheck.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_pose.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_callgrind.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_oprofile.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_perf.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_sleepy.cpp
                 PARENT_SCOPE)
 
 
@@ -30,6 +34,10 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/aboutform.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_gprof.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_pose.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_callgrind.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_oprofile.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_sleepy.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_perf.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/clientsidemap.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/cprofileviewitem.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/dotCallGraph.h
