@@ -1,5 +1,5 @@
 /* XPM */
-static char *dummy[]={
+static char *diffIcon[]={
 "32 32 246 2",
 "Qt c None",
 ".e c #304f7e",

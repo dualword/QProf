@@ -1,5 +1,5 @@
 /* XPM */
-static char *dummy[]={
+static char *appIcon[]={
 "32 32 18 1",
 ". c None",
 "b c #000000",

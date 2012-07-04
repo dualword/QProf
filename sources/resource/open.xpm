@@ -1,5 +1,5 @@
 /* XPM */
-static char *dummy[]={
+static char *openIcon[]={
 "32 32 478 2",
 ".m c None",
 "Qt c None",

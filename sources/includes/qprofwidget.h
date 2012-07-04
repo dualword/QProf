@@ -39,7 +39,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QtGui/QApplication>
-// #include "qmlapplicationviewer.h"
+#include <QToolBar>
 #include <QTreeWidget>
 #include <QTabWidget>
 #include <QUrl>
@@ -95,29 +95,31 @@ class QProfWidget : public QMainWindow, public Ui_MainWindow
         QVector<CProfileInfo>   mPreviousProfile;   // when comparing, keep previous profile information here
         QVector<QString>            mClasses;   // list of distinct class names found in the profile information
 
-        QStringList    comm_columns;
-        QStringList    comm_diff_columns;
-        QStringList    prof_columns;
-        QStringList    prof_diff_columns;
-        QStringList    func_columns;
-        QStringList    func_diff_columns;
-        QStringList    pose_columns;
-        QStringList    pose_diff_columns;
-        QStringList    recentList;
-        QActionGroup*   recentGroup;
-        QMenu*          recentMenu;
+        QStringList   comm_columns;
+        QStringList   comm_diff_columns;
+        QStringList   prof_columns;
+        QStringList   prof_diff_columns;
+        QStringList   func_columns;
+        QStringList   func_diff_columns;
+        QStringList   pose_columns;
+        QStringList   pose_diff_columns;
+        QStringList   recentList;
+        QActionGroup* recentGroup;
+        QMenu*        recentMenu;
         QVector<QAction*> actRecentSelect;
 
-        QString                 mGProfStdout;   // stdout from gprof command
-        QString                 mGProfStderr;   // stderr from gprof command
-        QString                 mGraphVizStdout;//  Stdout from the graphViz command
-        QString                 mGraphVizStderr; // Stderr from the graphViz command
-        QString                 mGraphVizDispStdout;//  Stdout from the graphViz command
-        QString                 mGraphVizDispStderr; // Stderr from the graphViz command
-        QString                 mFlatFilter;    // filter string for flat profile view
-        QFont                   mListFont;      // font used to draw the text
-        bool                    mAbbrevTemplates; // if true, templates are "abbreviates" (i.e. become <...>)
-        QDir                    mCurDir;        // current directory
+        QString       mGProfStdout;   // stdout from gprof command
+        QString       mGProfStderr;   // stderr from gprof command
+        QString       mGraphVizStdout;//  Stdout from the graphViz command
+        QString       mGraphVizStderr; // Stderr from the graphViz command
+        QString       mGraphVizDispStdout;//  Stdout from the graphViz command
+        QString       mGraphVizDispStderr; // Stderr from the graphViz command
+        QString       mFlatFilter;    // filter string for flat profile view
+        QFont         mListFont;      // font used to draw the text
+        bool          mAbbrevTemplates; // if true, templates are "abbreviates" (i.e. become <...>)
+        QDir          mCurDir;        // current directory
+        QToolBar*     fileToolBar;
+        QToolBar*     filterToolBar;
 
 #ifdef HAVE_LIBQTREEMAP
         QTreeMapOptions*        mTreemapOptions;
@@ -165,6 +167,7 @@ class QProfWidget : public QMainWindow, public Ui_MainWindow
 
     private:
         void initColFields();
+        void createToolBars();
         void openFile (const QString &filename, short format, bool compare = false);
         void prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler);
         void postProcessProfile (bool compare);

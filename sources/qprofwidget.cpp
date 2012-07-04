@@ -64,6 +64,14 @@
 #include <QTextBrowser>
 #include <QUrl>
 
+// icons
+#include "./resource/new.xpm"
+#include "./resource/open.xpm"
+#include "./resource/diff.xpm"
+#include "./resource/print.xpm"
+#include "./resource/lo32-app-qprof.xpm"
+
+
 #include "./includes/constants.h"
 #include "./includes/qprofwidget.h"
 #include "./includes/cprofileviewitem.h"
@@ -118,18 +126,14 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     processName = "/tmp/QProf_" + QString::number(randomZahl) + "/";
     QDir().mkdir(processName);
 
-// flatfilter disabled. Eduard
-//     QLineEdit *flatFilter = new QLineEdit (flatWidget);
-//     flatEditLayout->addWidget (new QLabel (i18n ("Filter:"), flatWidget));
-//     flatEditLayout->addItem (new QSpacerItem (10, 10));
-//     flatEditLayout->addWidget (flatFilter);
-
-
     recentGroup = new QActionGroup(this);
 
     connect (recentGroup, SIGNAL (triggered(QAction*)), this, SLOT (openRecentFile(QAction*)));
 
     prepareProfileView (mFlat, false, sLastFileFormat);
+    actionOpen->setIcon(QIcon(openIcon));
+    actionCompare->setIcon(QIcon(diffIcon));
+    actionPrint->setIcon(QIcon(printIcon));
 
     connect (actionOpen, SIGNAL (triggered ()), this, SLOT (openResultsFile ()));
     connect (actionQuit, SIGNAL (triggered ()), this, SLOT (quit ()));
@@ -152,8 +156,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     connect (actionAbout_programm, SIGNAL (triggered ()), this, SLOT (about ()));
     connect (actionAbout_Qt, SIGNAL (triggered ()), this, SLOT (aboutQt ()));
 
-    //     connect (flatFilter, SIGNAL (textChanged (const QString &)),
-//              this, SLOT (flatProfileFilterChanged (const QString &)));
+
     mFlat->setContextMenuPolicy(Qt::CustomContextMenu);
     connect (mFlat, SIGNAL (customContextMenuRequested(const QPoint&)), this, SLOT (profileEntryRightClick(const  QPoint&)));
 
@@ -186,6 +189,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
                                 "to display them on the methods tab."));
     mMethod->setWhatsThis(tr ("This is a clickable view of the method selected in the Graph view"));
 
+    createToolBars();
 
     mColorConfigure = new CConfigure(this);
 
@@ -610,6 +614,7 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
                 prof = FORMAT_FNCCHECK;
                 success = true;
             } /*else if (profiler == "pose") {
+
                 prof = FORMAT_POSE;
                 success = true;
             } */else {
@@ -620,6 +625,26 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
     }
 
     return success;
+}
+
+void QProfWidget::createToolBars()
+{
+    fileToolBar = addToolBar(tr("File"));
+    fileToolBar->addAction(actionOpen);
+    fileToolBar->addAction(actionCompare);
+    fileToolBar->addAction(actionPrint);
+
+// flatfilter disabled. Eduard
+//     QLineEdit *flatFilter = new QLineEdit (flatWidget);
+//     flatEditLayout->addWidget (new QLabel (i18n ("Filter:"), flatWidget));
+//     flatEditLayout->addItem (new QSpacerItem (10, 10));
+//     flatEditLayout->addWidget (flatFilter);
+    //     connect (flatFilter, SIGNAL (textChanged (const QString &)),
+//              this, SLOT (flatProfileFilterChanged (const QString &)));
+
+    filterToolBar = addToolBar(tr("Filter"));
+//     filterToolBar->addAction(filterAct);
+
 }
 
 
