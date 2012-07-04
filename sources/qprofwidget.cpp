@@ -490,6 +490,7 @@ void QProfWidget::openResultsFile ()
     hlayout->addWidget(fmtFNCCHECK);
 
     QRadioButton *fmtPOSE = new QRadioButton (tr ("Palm OS Emulator"));
+    fmtPOSE->setDisabled(true);
     bgroup->addButton(fmtPOSE);
     hlayout->addWidget(fmtPOSE);
 
@@ -591,7 +592,7 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
 {
     bool success = false;
 
-    for (int i = 1; i <= args.count(); i++) {
+    for (int i = 1; i < args.count(); i++) {
         QString arg = args.at(i);
 
         if (arg == "-f") {
@@ -838,7 +839,7 @@ void QProfWidget::addRecentFile(const QUrl &url)
 
 void QProfWidget::gprofStdout ()
 {
-    gprofApplication.setReadChannel( QProcess::StandardOutput );
+//     gprofApplication.setReadChannel( QProcess::StandardOutput );
     mGProfStdout += gprofApplication.readAllStandardOutput();
 }
 
@@ -846,35 +847,35 @@ void QProfWidget::gprofStdout ()
 
 void QProfWidget::gprofStderr ()
 {
-    gprofApplication.setReadChannel( QProcess::StandardError );
+//     gprofApplication.setReadChannel( QProcess::StandardError );
     mGProfStderr += gprofApplication.readAllStandardOutput();
 }
 
 //Handle the standard output from the GraphViz command
 void QProfWidget::graphVizStdout ()
 {
-    graphApplication.setReadChannel( QProcess::StandardOutput );
+//     graphApplication.setReadChannel( QProcess::StandardOutput );
     mGraphVizStdout += graphApplication.readAllStandardOutput();//String::fromLocal8Bit(buffer, buflen);
 }
 
 //Handle the standard errors from the GraphViz command
 void QProfWidget::graphVizStderr ()
 {
-    graphApplication.setReadChannel( QProcess::StandardError );
+//     graphApplication.setReadChannel( QProcess::StandardError );
     mGraphVizStderr += graphApplication.readAllStandardError();//::fromLocal8Bit(buffer, buflen);
 }
 
 //Handle the standard output from the GraphViz command
 void QProfWidget::graphVizDispStdout ()
 {
-    displayApplication.setReadChannel( QProcess::StandardOutput );
+//     displayApplication.setReadChannel( QProcess::StandardOutput );
     mGraphVizDispStdout += displayApplication.readAllStandardOutput();//::fromLocal8Bit(buffer, buflen);
 }
 
 //Handle the standard errors from the GraphViz command
 void QProfWidget::graphVizDispStderr ()
 {
-    displayApplication.setReadChannel( QProcess::StandardError);
+//     displayApplication.setReadChannel( QProcess::StandardError);
     mGraphVizDispStderr += displayApplication.readAllStandardError();//::fromLocal8Bit(buffer, buflen);
 }
 
@@ -1099,8 +1100,9 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
     popup->move(globalPos);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    if (info->callers.count ()>0){
-        QLabel* lab1=new QLabel("Called by:");
+
+    if (info->callers.count () > 0) {
+        QLabel* lab1 = new QLabel("Called by:");
         lab1->setAlignment(Qt::AlignCenter);
         lab1->setFrameStyle(QFrame::Panel);
         layout->addWidget(lab1);
@@ -1112,13 +1114,13 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
             itemProf[n++] = p;
         }
     }
-    
-    if (info->called.count () > 0){
-        QLabel* lab2=new QLabel("Calls:");
+
+    if (info->called.count () > 0) {
+        QLabel* lab2 = new QLabel("Calls:");
         lab2->setAlignment(Qt::AlignCenter);
         lab2->setFrameStyle(QFrame::Panel);
         layout->addWidget(lab2);
-    
+
         for (uint i = 0; i < info->called.count (); i++) {
             CProfileInfo *p = info->called[i];
 
@@ -1127,7 +1129,7 @@ void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
             itemProf[n++] = p;
         }
     }
-    
+
     popup->setLayout(layout);
     popup->show();
 }
@@ -1295,7 +1297,6 @@ void QProfWidget::generateCallGraph ()
 
             if (selectedItem == NULL) {
                 QMessageBox::critical (this, tr ("Selection Empty"), tr ("To export the current selection's call-graph,\nyou must select an item in the profile view.") );
-
                 return;
             }
         }
@@ -1304,7 +1305,6 @@ void QProfWidget::generateCallGraph ()
             QString dotfile = QFileDialog::getSaveFileName ( this,  tr ("Save call-graph as..."), tr("*.dot|GraphViz files"));
 
             if (dotfile.isEmpty ()) {
-
                 return;
             }
 
@@ -1378,6 +1378,7 @@ void QProfWidget::generateCallGraph ()
             graphApplicationName = "dot";
             graphParams << file.fileName() << "-Timap" ;
 //                 displayApplication << "dot" << file.fileName() << "-Tjpg" << "-o" << ".graphViz.jpg";
+            graphApplication.setProcessChannelMode(QProcess::MergedChannels);
 
             connect (&graphApplication, SIGNAL (readyReadStandardOutput ()), this, SLOT (graphVizStdout ()));
             connect (&graphApplication, SIGNAL (readyReadStandardError()), this, SLOT (graphVizStderr ()));
@@ -1385,6 +1386,7 @@ void QProfWidget::generateCallGraph ()
             graphApplication.execute(graphApplicationName, graphParams);
             graphParams.clear();
             graphParams << file.fileName() << "-Tjpg" << "-o" << ".graphViz.jpg";
+            displayApplication.setProcessChannelMode(QProcess::MergedChannels);
             displayApplication.execute(graphApplicationName, graphParams);
 
             QFile mapFile;
@@ -1581,6 +1583,9 @@ void QProfWidget::prepareHtmlPart(QTextBrowser* part)
 
     dispAppName = "dot";
     dispAppParams << file->fileName() << "-Tjpg" << "-o" << fileName;
+
+    graphApplication.setProcessChannelMode(QProcess::MergedChannels);
+    displayApplication.setProcessChannelMode(QProcess::MergedChannels);
 
     connect (&graphApplication, SIGNAL (readyReadStandardOutput ()), this, SLOT (graphVizStdout ()));
     connect (&graphApplication, SIGNAL (readyReadStandardError ()), this, SLOT (graphVizStderr ()));
