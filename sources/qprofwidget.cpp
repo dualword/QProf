@@ -65,12 +65,7 @@
 #include <QUrl>
 
 // icons
-#include "./resource/new.xpm"
-#include "./resource/open.xpm"
-#include "./resource/diff.xpm"
-#include "./resource/print.xpm"
 #include "./resource/lo32-app-qprof.xpm"
-
 
 #include "./includes/constants.h"
 #include "./includes/qprofwidget.h"
@@ -130,11 +125,16 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 
     connect (recentGroup, SIGNAL (triggered(QAction*)), this, SLOT (openRecentFile(QAction*)));
 
+    setWindowIcon ( QIcon(appIcon));
+    
     prepareProfileView (mFlat, false, sLastFileFormat);
-    actionOpen->setIcon(QIcon(openIcon));
-    actionCompare->setIcon(QIcon(diffIcon));
-    actionPrint->setIcon(QIcon(printIcon));
-
+    actionOpen->setIcon(QIcon::fromTheme("document-open"));
+    actionCompare->setIcon(QIcon::fromTheme("edit-copy"));
+    actionPrint->setIcon(QIcon::fromTheme("printer"));
+    
+    actionQuit->setIcon(QIcon::fromTheme("application-exit"));
+    actionOpen_Recent->setIcon(QIcon::fromTheme("document-open-recent"));
+    
     connect (actionOpen, SIGNAL (triggered ()), this, SLOT (openResultsFile ()));
     connect (actionQuit, SIGNAL (triggered ()), this, SLOT (quit ()));
 //     connect (actionOpen_Recent, SIGNAL (triggered()), this, SLOT (openRecentFile()));
@@ -149,11 +149,14 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 #else
     connect (action_Display_TreeMap_View, SIGNAL (triggered ()), this, SLOT (displayTreeMapView ()));
 #endif
-
+   
+    
     connect (actionAbbreviate_C_Templates, SIGNAL (toggled(bool)), this, SLOT (toggleTemplateAbbrev (bool)));
     connect (actionSelect_Font, SIGNAL (triggered ()), this, SLOT (selectListFont ()));
     connect (action_Configure_KProf, SIGNAL (triggered ()), this, SLOT (configure ()));
+//     actionAbout_programm->setIcon(QIcon::fromTheme("about"));
     connect (actionAbout_programm, SIGNAL (triggered ()), this, SLOT (about ()));
+//     actionAbout_Qt->setIcon(QIcon::fromTheme("about-qt"));
     connect (actionAbout_Qt, SIGNAL (triggered ()), this, SLOT (aboutQt ()));
 
 
