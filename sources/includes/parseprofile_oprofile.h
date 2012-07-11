@@ -28,19 +28,19 @@ class CProfileInfo;
 
 class CParseProfile_oprofile : public CParseProfile
 {
-    public:
-        CParseProfile_oprofile(QTextStream& t, QVector<CProfileInfo>& profile);
-        ~CParseProfile_oprofile() {};
+public:
+    CParseProfile_oprofile(QTextStream& t, QVector<CProfileInfo>& profile);
+    ~CParseProfile_oprofile() {};
 
-        bool valid () const;
+    bool valid () const;
 
-    private:
-        CParseProfile_oprofile();
+private:
+    CParseProfile_oprofile();
 
-        typedef struct {                    // structure holding call-graph data for PalmOS Emulator results
-            int     index;
-            int     parent;
-        } SPoseCallGraph;
+    typedef struct {                    // structure holding call-graph data for PalmOS Emulator results
+        int     index;
+        int     parent;
+    } SPoseCallGraph;
 
 };
 

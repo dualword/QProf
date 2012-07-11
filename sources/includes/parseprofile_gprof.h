@@ -28,14 +28,14 @@ class CProfileInfo;
 
 class CParseProfile_gprof : public CParseProfile
 {
-    public:
-        CParseProfile_gprof(QTextStream& t, QVector<CProfileInfo>& profile);
-        ~CParseProfile_gprof() {};
+public:
+    CParseProfile_gprof(QTextStream& t, QVector<CProfileInfo>& profile);
+    ~CParseProfile_gprof() {};
 
-        bool valid () const;
+    bool valid () const;
 
-    private:
-        CParseProfile_gprof();
+private:
+    CParseProfile_gprof();
 
 };
 

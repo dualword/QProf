@@ -28,19 +28,19 @@ class CProfileInfo;
 
 class CParseProfile_sleepy : public CParseProfile
 {
-    public:
-        CParseProfile_sleepy(QTextStream& t, QVector<CProfileInfo>& profile);
-        ~CParseProfile_sleepy() {};
+public:
+    CParseProfile_sleepy(QTextStream& t, QVector<CProfileInfo>& profile);
+    ~CParseProfile_sleepy() {};
 
-        bool valid () const;
+    bool valid () const;
 
-    private:
-        CParseProfile_sleepy();
+private:
+    CParseProfile_sleepy();
 
-        typedef struct {                    // structure holding call-graph data for PalmOS Emulator results
-            int     index;
-            int     parent;
-        } SPoseCallGraph;
+    typedef struct {                    // structure holding call-graph data for PalmOS Emulator results
+        int     index;
+        int     parent;
+    } SPoseCallGraph;
 
 };
 

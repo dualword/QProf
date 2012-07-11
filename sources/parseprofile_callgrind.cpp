@@ -674,105 +674,105 @@ bool CParseProfile_callgrind::parse_cost_lines()
         } else {
 
             switch(c) {
-                case 'f':
-                    // fl=, fi=, fe=
-                    if (line.startsWith("fl=") ||
-                            line.startsWith("fi=") ||
-                            line.startsWith("fe=")) {
+            case 'f':
+                // fl=, fi=, fe=
+                if (line.startsWith("fl=") ||
+                        line.startsWith("fi=") ||
+                        line.startsWith("fe=")) {
 
-                        fileName = line.mid(line.indexOf(" ") + 1);
-                        continue;
+                    fileName = line.mid(line.indexOf(" ") + 1);
+                    continue;
+                }
+
+                // fn=
+                if (line.startsWith("fn=")) {
+                    function = line.mid(line.indexOf(" ") + 1);
+                    func = make_function();
+
+                    if (func == NULL) {
+                        return false;
                     }
-
-                    // fn=
-                    if (line.startsWith("fn=")) {
-                        function = line.mid(line.indexOf(" ") + 1);
-                        func = make_function();
-
-                        if (func == NULL) {
-                            return false;
-                        }
 
 #if 0
-                        // on a new function, update status
-                        int progress = (int)(100.0 * file.current() / file.len() + .5);
+                    // on a new function, update status
+                    int progress = (int)(100.0 * file.current() / file.len() + .5);
 
-                        if (progress != statusProgress) {
-                            statusProgress = progress;
+                    if (progress != statusProgress) {
+                        statusProgress = progress;
 
-                            /* When this signal is connected, it most probably
-                             * should lead to GUI update. Thus, when multiple
-                             * "long operations" (like file loading) are in progress,
-                             * this can temporarly switch to another operation.
-                             */
-                            loadProgress(statusProgress);
-                        }
+                        /* When this signal is connected, it most probably
+                         * should lead to GUI update. Thus, when multiple
+                         * "long operations" (like file loading) are in progress,
+                         * this can temporarly switch to another operation.
+                         */
+                        loadProgress(statusProgress);
+                    }
 
 #endif
-                        continue;
-                    }
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 'c':
-                    // cob=
-                    if (line.startsWith("cob=")) {
-                        calledLibName = line.mid(line.indexOf(" ") + 1);
-                        continue;
-                    }
+            case 'c':
+                // cob=
+                if (line.startsWith("cob=")) {
+                    calledLibName = line.mid(line.indexOf(" ") + 1);
+                    continue;
+                }
 
-                    // cfi= / cfl=
-                    if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
-                        calledFileName = line.mid(line.indexOf(" ") + 1);
-                        continue;
-                    }
+                // cfi= / cfl=
+                if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
+                    calledFileName = line.mid(line.indexOf(" ") + 1);
+                    continue;
+                }
 
-                    // cfn=
-                    if (line.startsWith("cfn=")) {
-                        calledFunction = line.mid(line.indexOf(" ") + 1);
-                        func = make_CalledFunction();
-                        continue;
-                    }
+                // cfn=
+                if (line.startsWith("cfn=")) {
+                    calledFunction = line.mid(line.indexOf(" ") + 1);
+                    func = make_CalledFunction();
+                    continue;
+                }
 
-                    // calls=
-                    if (line.startsWith("calls=")) {
-                        // ignore long lines...
+                // calls=
+                if (line.startsWith("calls=")) {
+                    // ignore long lines...
 //                     line.stripUInt64(currentCallCount);
-                        if (func != NULL) {
-                            func->calls = line.mid(line.indexOf(" ") + 1).toULongLong();
-                        }
-
-                        nextLineType = CallCost;
-                        continue;
+                    if (func != NULL) {
+                        func->calls = line.mid(line.indexOf(" ") + 1).toULongLong();
                     }
 
-                    // cmd:
-                    if (line.startsWith("cmd:")) {
-                        QString command = QString(line).trimmed();
-                        // ignore
-                        /*
-                                            if (!_data->command().isEmpty() &&
-                                                    _data->command() != command) {
+                    nextLineType = CallCost;
+                    continue;
+                }
 
-                                                error(QString("Redefined command, was '%1'").arg(_data->command()));
-                                            }
+                // cmd:
+                if (line.startsWith("cmd:")) {
+                    QString command = QString(line).trimmed();
+                    // ignore
+                    /*
+                                        if (!_data->command().isEmpty() &&
+                                                _data->command() != command) {
 
-                                            _data->setCommand(command);*/
-                        continue;
-                    }
+                                            error(QString("Redefined command, was '%1'").arg(_data->command()));
+                                        }
 
-                    // creator:
-                    if (line.startsWith("creator:")) {
-                        // ignore ...
-                        continue;
-                    }
+                                        _data->setCommand(command);*/
+                    continue;
+                }
 
-                    break;
+                // creator:
+                if (line.startsWith("creator:")) {
+                    // ignore ...
+                    continue;
+                }
 
-                case 'j':
-                    // jcnd=
-                    if (line.startsWith("jcnd=")) {
-                        bool valid;
+                break;
+
+            case 'j':
+                // jcnd=
+                if (line.startsWith("jcnd=")) {
+                    bool valid;
 //ignore
 //                     valid = line.stripUInt64(jumpsFollowed) &&
 //                             line.startsWith("/") &&
@@ -782,14 +782,14 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                     if (!valid) {
 //                         error(QString("Invalid line after 'jcnd'"));
 //                     } else {
-                        nextLineType = CondJump;
+                    nextLineType = CondJump;
 //                     }
 
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (line.startsWith("jump=")) {
-                        bool valid;
+                if (line.startsWith("jump=")) {
+                    bool valid;
 //ignore..
 //                     valid = line.stripUInt64(jumpsExecuted) &&
 //                             parsePosition(line, targetPos);
@@ -797,95 +797,95 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                     if (!valid) {
 //                         error(QString("Invalid line after 'jump'"));
 //                     } else {
-                        nextLineType = BoringJump;
+                    nextLineType = BoringJump;
 //                     }
 
-                        continue;
-                    }
-
-                    // jfi=
-                    if (line.startsWith("jfi=")) {
-                        currentJumpToFile = line.mid(line.indexOf(" ") + 1);
-                        continue;
-                    }
-
-                    // jfn=
-                    if (line.startsWith("jfn=")) {
-                        /*
-                                            if (!currentJumpToFile) {
-                                                // !=0 as functions needs file
-                                                currentJumpToFile = line.mid(line.indexOf(" ")+1);
-                                            }*/
-
-                        currentJumpToFunction = line.mid(line.indexOf(" ") + 1);
-                        continue;
-                    }
-
-                    break;
-
-                case 'o':
-                    // ob=
-                    if (line.startsWith("ob=")) {
-                        libName = line.mid(line.indexOf(" ") + 1);
-//                     setObject(line);
-                        continue;
-                    }
-
-                    break;
-
-                case '#':
                     continue;
+                }
 
-                case 't':
-                    // totals:
-                    if (line.startsWith("totals:")) {
-                        continue;
-                    }
+                // jfi=
+                if (line.startsWith("jfi=")) {
+                    currentJumpToFile = line.mid(line.indexOf(" ") + 1);
+                    continue;
+                }
 
-                    // thread:
-                    if (line.startsWith("thread:")) {
-                        // ignored
+                // jfn=
+                if (line.startsWith("jfn=")) {
+                    /*
+                                        if (!currentJumpToFile) {
+                                            // !=0 as functions needs file
+                                            currentJumpToFile = line.mid(line.indexOf(" ")+1);
+                                        }*/
+
+                    currentJumpToFunction = line.mid(line.indexOf(" ") + 1);
+                    continue;
+                }
+
+                break;
+
+            case 'o':
+                // ob=
+                if (line.startsWith("ob=")) {
+                    libName = line.mid(line.indexOf(" ") + 1);
+//                     setObject(line);
+                    continue;
+                }
+
+                break;
+
+            case '#':
+                continue;
+
+            case 't':
+                // totals:
+                if (line.startsWith("totals:")) {
+                    continue;
+                }
+
+                // thread:
+                if (line.startsWith("thread:")) {
+                    // ignored
 //                     prepareNewPart();
 //                     _part->setThreadID(QString(line).toInt());
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // timeframe (BB):
-                    if (line.startsWith("timeframe (BB):")) {
-                        // ignored
+                // timeframe (BB):
+                if (line.startsWith("timeframe (BB):")) {
+                    // ignored
 //                     _part->setTimeframe(line);
-                        continue;
-                    }
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 'd':
-                    // desc:
-                    if (line.startsWith("desc:")) {
+            case 'd':
+                // desc:
+                if (line.startsWith("desc:")) {
 
 //                     line.stripSurroundingSpaces();
 
-                        // desc: Trigger:
+                    // desc: Trigger:
 //                     if (line.startsWith("Trigger:")) {
 //                         _part->setTrigger(line);
 //                     }
 
-                        continue;
-                    }
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 'e':
-                    // events:
-                    if (line.startsWith("events:")) {
+            case 'e':
+                // events:
+                if (line.startsWith("events:")) {
 //                     prepareNewPart();
 //                     mapping = _data->eventTypes()->createMapping(line);
 //                     _part->setEventMapping(mapping);
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // event:<name>[=<formula>][:<long name>]
-                    if (line.startsWith("event:")) {
+                // event:<name>[=<formula>][:<long name>]
+                if (line.startsWith("event:")) {
 //                     line.stripSurroundingSpaces();
 
 //                     FixString e, f, l;
@@ -913,52 +913,52 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                     }
 //
 //                     EventType::add(new EventType(e, line, f));
-                        continue;
-                    }
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 'p':
-                    // part:
-                    if (line.startsWith("part:")) {
-                        // ignore
+            case 'p':
+                // part:
+                if (line.startsWith("part:")) {
+                    // ignore
 //                     prepareNewPart();
 //                     _part->setPartNumber(QString(line).toInt());
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // pid:
-                    if (line.startsWith("pid:")) {
-                        // ignore
+                // pid:
+                if (line.startsWith("pid:")) {
+                    // ignore
 //                     prepareNewPart();
 //                     _part->setProcessID(QString(line).toInt());
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // positions:
-                    if (line.startsWith("positions:")) {
+                // positions:
+                if (line.startsWith("positions:")) {
 //                     prepareNewPart();
 //                     QString positions(line);
-                        hasLineInfo = line.contains("line");
-                        hasAddrInfo = line.contains("instr");
-                        continue;
-                    }
+                    hasLineInfo = line.contains("line");
+                    hasAddrInfo = line.contains("instr");
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 'v':
-                    // version:
-                    if (line.startsWith("version:")) {
-                        // ignore for now
-                        continue;
-                    }
+            case 'v':
+                // version:
+                if (line.startsWith("version:")) {
+                    // ignore for now
+                    continue;
+                }
 
-                    break;
+                break;
 
-                case 's':
-                    // summary:
-                    if (line.startsWith("summary:")) {
-                        summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
+            case 's':
+                // summary:
+                if (line.startsWith("summary:")) {
+                    summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
 //                     if (!mapping) {
 //                         error(QString("No event line found. Skipping file"));
 //                         delete _part;
@@ -966,26 +966,26 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                     }
 //
 //                     _part->totals()->set(mapping, line);
-                        continue;
-                    }
+                    continue;
+                }
 
-                case 'r':
-                    // rcalls= (deprecated)
-                    if (line.startsWith("rcalls=")) {
-                        // ignored
-                        // handle like normal calls: we need the sum of call count
-                        // recursive cost is discarded in cycle detection
+            case 'r':
+                // rcalls= (deprecated)
+                if (line.startsWith("rcalls=")) {
+                    // ignored
+                    // handle like normal calls: we need the sum of call count
+                    // recursive cost is discarded in cycle detection
 //                     line.stripUInt64(currentCallCount);
-                        nextLineType = CallCost;
+                    nextLineType = CallCost;
 //
 //                     warning(QString("Old file format using deprecated 'rcalls'"));
-                        continue;
-                    }
+                    continue;
+                }
 
-                    break;
+                break;
 
-                default:
-                    break;
+            default:
+                break;
             }
 
             qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
@@ -1001,12 +1001,12 @@ bool CParseProfile_callgrind::parse_cost_lines()
             long long sampl;
             num = line.lastIndexOf(QRegExp("\\d+"));
             sampl = num.toLongLong(&io);
-            if (io == false){
+            if (io == false) {
                 qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
                 continue;
             }
-            
-            if (func != NULL){
+
+            if (func != NULL) {
                 func->custom.callgrind.selfSamples += sampl;
             }
         }
@@ -1017,12 +1017,12 @@ bool CParseProfile_callgrind::parse_cost_lines()
             long long sampl;
             num = line.lastIndexOf(QRegExp("\\d+"));
             sampl = num.toLongLong(&io);
-            if (io == false){
+            if (io == false) {
                 qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
                 continue;
             }
 
-            if (func != NULL){
+            if (func != NULL) {
                 func->custom.callgrind.selfSamples += sampl;
             }
         }
@@ -1122,7 +1122,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                          << " (line " << currentPos.fromLine
 //                          << ") to 0x" << targetPos.fromAddr.toString()
 //                          << " (line " << targetPos.fromLine << ")";
-// 
+//
 //                 if (nextLineType == BoringJump)
 //                     qDebug() << " Boring Jump, count " << jumpsExecuted.pretty();
 //                 else

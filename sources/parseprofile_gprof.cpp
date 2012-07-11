@@ -120,156 +120,156 @@ CParseProfile_gprof::CParseProfile_gprof (QTextStream& t, QVector<CProfileInfo>&
         }
 
         switch (state) {
-                /*
-                 * look for beginning of flat profile
-                 *
-                 */
-            case SEARCH_FLAT_PROFILE:
-
-                if (fields[0] == "time" && fields[1] == "seconds" && fields[2] == "seconds") {
-                    state = PROCESS_FLAT_PROFILE;
-                }
-
-                break;
-
-                /*
-                 * analyze flat profile entry
-                 *
-                 */
-            case PROCESS_FLAT_PROFILE: {
-                CProfileInfo *p = new CProfileInfo;
-                bool isFloat;
-                p->ind = profile.count ();
-
-                if (fields[0].length() < 1) {
-                    delete p;
-                    break;
-                }
-
-                p->cumPercent = fields[0].toFloat (&isFloat);
-
-                if (isFloat == false) {
-                    delete p;
-                    break;
-                }
-
-                p->cumSeconds = fields[1].toFloat (&isFloat);
-
-                if (isFloat == false) {
-                    delete p;
-                    break;
-                }
-
-                p->selfSeconds = fields[2].toFloat (&isFloat);
-
-                if (isFloat == false) {
-                    delete p;
-                    break;
-                }
-
-                if (fields[3][0].isDigit ()) {
-                    p->calls            = fields[3].toLong ();
-                    p->custom.gprof.selfMsPerCall   = fields[4].toFloat ();
-                    p->totalMsPerCall   = fields[5].toFloat ();
-                    p->name             = fields[6];
-                } else {
-                    // if the profile was generated with -z, uncalled functions
-                    // have empty "calls", "selfTsPerCall" and "totalTsPerCall" fields
-                    p->calls            = 0;
-                    p->custom.gprof.selfMsPerCall = 0;
-                    p->totalMsPerCall   = 0;
-                    p->name             = fields[3];
-                }
-
-                // p->simplifiedName will be updated in postProcessProfile()
-                p->recursive        = false;
-                p->object           = QProfWidget::getClassName (p->name);
-                p->multipleSignatures = false;              // will be updated in postProcessProfile()
-
-                int argsoff = p->name.indexOf ('(');
-
-                if (argsoff != -1) {
-                    p->method = p->name.mid (p->object.length(), argsoff - p->object.length());
-                    p->arguments  = p->name.right (p->name.length() - argsoff);
-                } else {
-                    p->method = p->name.right (p->name.length() - p->object.length());
-                }
-
-                if (p->method.startsWith ("::")) {
-                    p->method.remove (0, 2);
-                }
-
-//                 int j = profile.size ();
-                profile.append (*p);
-//                 profile.insert (j, *p);
-                break;
-            }
-
             /*
-             * look for call graph
+             * look for beginning of flat profile
              *
              */
-            case SEARCH_CALL_GRAPH:
+        case SEARCH_FLAT_PROFILE:
 
-                if (fields[0] == "index" && fields[1] == "%") {
-                    state = PROCESS_CALL_GRAPH;
-                }
+            if (fields[0] == "time" && fields[1] == "seconds" && fields[2] == "seconds") {
+                state = PROCESS_FLAT_PROFILE;
+            }
 
-                break;
+            break;
 
-                /*
-                 * analyze call graph entry
-                 *
-                 */
-            case PROCESS_CALL_GRAPH: {
-                // if we reach a dashes line, we finalize the previous call graph block
-                // by analyzing the block and updating callers, called & recursive
-                // information
-                if (dashesRegExp.indexIn (fields[0], 0) == 0) {
-                    processCallGraphBlock (callGraphBlock, profile);
-                    callGraphBlock.resize (0);
-                    break;
-                }
+            /*
+             * analyze flat profile entry
+             *
+             */
+        case PROCESS_FLAT_PROFILE: {
+            CProfileInfo *p = new CProfileInfo;
+            bool isFloat;
+            p->ind = profile.count ();
 
-                QString count;
-                SCallGraphEntry *e = new SCallGraphEntry;
-                uint field = 0;
-
-                e->line = line;
-                e->primary = false;
-                e->recursive = false;
-
-                // detect the primary line in the call graph
-                if (indexRegExp.indexIn (fields[0], 0) == 0) {
-                    e->primary = true;
-                    field++;
-                }
-
-                // gather other values (we have to do some guessing to get them right)
-                while (field < fields.count ()) {
-                    if (countRegExp.indexIn (fields[field], 0) == 0) {
-                        e->recursive = fields[field].indexOf ('+') != -1;
-                    } else if (floatRegExp.indexIn (fields[field], 0) == -1) {
-                        e->name = fields[field];
-                    }
-
-                    field++;
-                }
-
-                // if we got a call graph block without a primary function name,
-                // drop it completely.
-                if (e->name == NULL || e->name.length() == 0) {
-                    delete e;
-                    break;
-                }
-
-                if (e->primary == true && count.indexOf ('+') != -1) {
-                    e->recursive = true;
-                }
-
-                callGraphBlock.append(*e);
+            if (fields[0].length() < 1) {
+                delete p;
                 break;
             }
+
+            p->cumPercent = fields[0].toFloat (&isFloat);
+
+            if (isFloat == false) {
+                delete p;
+                break;
+            }
+
+            p->cumSeconds = fields[1].toFloat (&isFloat);
+
+            if (isFloat == false) {
+                delete p;
+                break;
+            }
+
+            p->selfSeconds = fields[2].toFloat (&isFloat);
+
+            if (isFloat == false) {
+                delete p;
+                break;
+            }
+
+            if (fields[3][0].isDigit ()) {
+                p->calls            = fields[3].toLong ();
+                p->custom.gprof.selfMsPerCall   = fields[4].toFloat ();
+                p->totalMsPerCall   = fields[5].toFloat ();
+                p->name             = fields[6];
+            } else {
+                // if the profile was generated with -z, uncalled functions
+                // have empty "calls", "selfTsPerCall" and "totalTsPerCall" fields
+                p->calls            = 0;
+                p->custom.gprof.selfMsPerCall = 0;
+                p->totalMsPerCall   = 0;
+                p->name             = fields[3];
+            }
+
+            // p->simplifiedName will be updated in postProcessProfile()
+            p->recursive        = false;
+            p->object           = QProfWidget::getClassName (p->name);
+            p->multipleSignatures = false;              // will be updated in postProcessProfile()
+
+            int argsoff = p->name.indexOf ('(');
+
+            if (argsoff != -1) {
+                p->method = p->name.mid (p->object.length(), argsoff - p->object.length());
+                p->arguments  = p->name.right (p->name.length() - argsoff);
+            } else {
+                p->method = p->name.right (p->name.length() - p->object.length());
+            }
+
+            if (p->method.startsWith ("::")) {
+                p->method.remove (0, 2);
+            }
+
+//                 int j = profile.size ();
+            profile.append (*p);
+//                 profile.insert (j, *p);
+            break;
+        }
+
+        /*
+         * look for call graph
+         *
+         */
+        case SEARCH_CALL_GRAPH:
+
+            if (fields[0] == "index" && fields[1] == "%") {
+                state = PROCESS_CALL_GRAPH;
+            }
+
+            break;
+
+            /*
+             * analyze call graph entry
+             *
+             */
+        case PROCESS_CALL_GRAPH: {
+            // if we reach a dashes line, we finalize the previous call graph block
+            // by analyzing the block and updating callers, called & recursive
+            // information
+            if (dashesRegExp.indexIn (fields[0], 0) == 0) {
+                processCallGraphBlock (callGraphBlock, profile);
+                callGraphBlock.resize (0);
+                break;
+            }
+
+            QString count;
+            SCallGraphEntry *e = new SCallGraphEntry;
+            uint field = 0;
+
+            e->line = line;
+            e->primary = false;
+            e->recursive = false;
+
+            // detect the primary line in the call graph
+            if (indexRegExp.indexIn (fields[0], 0) == 0) {
+                e->primary = true;
+                field++;
+            }
+
+            // gather other values (we have to do some guessing to get them right)
+            while (field < fields.count ()) {
+                if (countRegExp.indexIn (fields[field], 0) == 0) {
+                    e->recursive = fields[field].indexOf ('+') != -1;
+                } else if (floatRegExp.indexIn (fields[field], 0) == -1) {
+                    e->name = fields[field];
+                }
+
+                field++;
+            }
+
+            // if we got a call graph block without a primary function name,
+            // drop it completely.
+            if (e->name == NULL || e->name.length() == 0) {
+                delete e;
+                break;
+            }
+
+            if (e->primary == true && count.indexOf ('+') != -1) {
+                e->recursive = true;
+            }
+
+            callGraphBlock.append(*e);
+            break;
+        }
         }
     }
 }

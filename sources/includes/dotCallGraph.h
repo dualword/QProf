@@ -26,14 +26,14 @@
 class DotCallGraph
 {
 //           Q_OBJECT
-    public:
-        DotCallGraph (QFile& file, bool currentSelectionOnly,
-                      bool imageMap, QVector<CProfileInfo>& mProfile,
-                      const QString& tempDir, const QColor& fillColour);
-        ~DotCallGraph() {};
+public:
+    DotCallGraph (QFile& file, bool currentSelectionOnly,
+                  bool imageMap, QVector<CProfileInfo>& mProfile,
+                  const QString& tempDir, const QColor& fillColour);
+    ~DotCallGraph() {};
 
-    private:
-        DotCallGraph();
+private:
+    DotCallGraph();
 };
 
 #endif

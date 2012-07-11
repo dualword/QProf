@@ -31,27 +31,27 @@ typedef struct {                    // structure is used while parsing the call 
 
 class CParseProfile
 {
-    public:
-        CParseProfile();
-        virtual ~CParseProfile() {};
+public:
+    CParseProfile();
+    virtual ~CParseProfile() {};
 
-        virtual bool valid () const = 0;
+    virtual bool valid () const = 0;
 
-    protected:
-        void processCallGraphBlock (const QVector<SCallGraphEntry> &data, QVector<CProfileInfo>& profile);
-        bool mValid;
-        CProfileInfo *locateProfileEntry (const QString& name, QVector<CProfileInfo>& profile);
+protected:
+    void processCallGraphBlock (const QVector<SCallGraphEntry> &data, QVector<CProfileInfo>& profile);
+    bool mValid;
+    CProfileInfo *locateProfileEntry (const QString& name, QVector<CProfileInfo>& profile);
 
-        enum {                              // states while parsing the gprof output
-            ANALYZING,
-            PROCESS_CYCLES,                 // used for Function Check parsing
-            SEARCH_FLAT_PROFILE,            // for GPROF (to remove later)
-            PROCESS_FLAT_PROFILE,
-            PROCESS_MIN_MAX_TIME,           // used for Function Check parsing
-            SEARCH_CALL_GRAPH,              // for GPROF (to remove later)
-            PROCESS_CALL_GRAPH,
-            DISCARD_CALL_GRAPH_ENTRY
-        };
+    enum {                              // states while parsing the gprof output
+        ANALYZING,
+        PROCESS_CYCLES,                 // used for Function Check parsing
+        SEARCH_FLAT_PROFILE,            // for GPROF (to remove later)
+        PROCESS_FLAT_PROFILE,
+        PROCESS_MIN_MAX_TIME,           // used for Function Check parsing
+        SEARCH_CALL_GRAPH,              // for GPROF (to remove later)
+        PROCESS_CALL_GRAPH,
+        DISCARD_CALL_GRAPH_ENTRY
+    };
 
 };
 

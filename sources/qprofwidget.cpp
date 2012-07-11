@@ -283,45 +283,45 @@ void QProfWidget::prepareProfileView (QTreeWidget *view, bool rootIsDecorated, s
     view->setColumnCount(0);
 
     switch (profiler) {
-        case FORMAT_GPROF:
+    case FORMAT_GPROF:
 
-            if (sDiffMode) {
-                vPtr = &prof_diff_columns;
-            } else {
-                vPtr = &prof_columns;
-            }
+        if (sDiffMode) {
+            vPtr = &prof_diff_columns;
+        } else {
+            vPtr = &prof_columns;
+        }
 
-            break;
+        break;
 
-        case FORMAT_FNCCHECK:
+    case FORMAT_FNCCHECK:
 
-            if (sDiffMode) {
-                vPtr = &func_diff_columns;
-            } else {
-                vPtr = &func_columns;
-            }
+        if (sDiffMode) {
+            vPtr = &func_diff_columns;
+        } else {
+            vPtr = &func_columns;
+        }
 
-            break;
+        break;
 
-        case FORMAT_POSE:
+    case FORMAT_POSE:
 
-            if (sDiffMode) {
-                vPtr = &pose_diff_columns;
-            } else {
-                vPtr = &pose_columns;
-            }
+        if (sDiffMode) {
+            vPtr = &pose_diff_columns;
+        } else {
+            vPtr = &pose_columns;
+        }
 
-            break;
+        break;
 
-        case FORMAT_CALLGRIND:
+    case FORMAT_CALLGRIND:
 
-            if (sDiffMode) {
-                vPtr = &pose_diff_columns;
-            } else {
-                vPtr = &pose_columns;
-            }
+        if (sDiffMode) {
+            vPtr = &pose_diff_columns;
+        } else {
+            vPtr = &pose_columns;
+        }
 
-            break;
+        break;
     }
 
     view->setHeaderLabels(*vPtr);
@@ -523,7 +523,7 @@ void QProfWidget::openResultsFile ()
     fmtCALLG->setDisabled(true);
     bgroup->addButton(fmtCALLG);
     hlayout->addWidget(fmtCALLG);
-    
+
     // reset format button to last used format
     if (sLastFileFormat == FORMAT_GPROF && !fmtGPROF->isChecked()) {
         fmtGPROF->toggle ();
@@ -588,18 +588,18 @@ void QProfWidget::openResultsFile ()
 
         //print a debug message
         switch(sLastFileFormat) {
-            case    FORMAT_GPROF:
-                qDebug("Suppose Fileformat is \"GNU gprof\"");
-                break;
-            case    FORMAT_FNCCHECK:
-                qDebug("Suppose Fileformat is \"Function Check\"");
-                break;
-            case    FORMAT_POSE:
-                qDebug("Suppose Fileformat is \"PalmOS Emulator\"");
-                break;
-            case    FORMAT_CALLGRIND:
-                qDebug("Suppose Fileformat is \"Callgrind\"");
-                break;
+        case    FORMAT_GPROF:
+            qDebug("Suppose Fileformat is \"GNU gprof\"");
+            break;
+        case    FORMAT_FNCCHECK:
+            qDebug("Suppose Fileformat is \"Function Check\"");
+            break;
+        case    FORMAT_POSE:
+            qDebug("Suppose Fileformat is \"PalmOS Emulator\"");
+            break;
+        case    FORMAT_CALLGRIND:
+            qDebug("Suppose Fileformat is \"Callgrind\"");
+            break;
         }
 
         //open the file
@@ -902,7 +902,7 @@ void QProfWidget::openFile (const QString &filename, short format, bool compare)
         schem = "file-callgrind";
     else
         schem = "file-pose";
-    
+
     url.setScheme (schem);
 //     qDebug() << url;
     addRecentFile (url);
@@ -1316,15 +1316,15 @@ void QProfWidget::doPrint ()
     cur = mTabs->currentIndex();
 
     switch (cur) {
-        case 0:
-            view = mFlat;
-            break;
-        case 1:
-            view = mHier;
-            break;
-        default:
-            view = mObjs;
-            break;
+    case 0:
+        view = mFlat;
+        break;
+    case 1:
+        view = mHier;
+        break;
+    default:
+        view = mObjs;
+        break;
     }
 
     QString s;

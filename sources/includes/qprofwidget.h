@@ -65,126 +65,126 @@ class QTreeMapOptions;
 
 class CCallGraph : public QDialog, public Ui_CCallGraph
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
+public:
 };
 
 
 
 class QProfWidget : public QMainWindow, public Ui_MainWindow
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        QFont            sListFont;  // font used to draw list entries
-        static short     sLastFileFormat;    // format of the last opened file
-        static bool      sDiffMode;  // true if performing a diff. Used by CProfileViewItem
+public:
+    QFont            sListFont;  // font used to draw list entries
+    static short     sLastFileFormat;    // format of the last opened file
+    static bool      sDiffMode;  // true if performing a diff. Used by CProfileViewItem
 
-    protected:
-        QProcess graphApplication;
-        QProcess displayApplication;
-        QProcess gprofApplication;
+protected:
+    QProcess graphApplication;
+    QProcess displayApplication;
+    QProcess gprofApplication;
 
-        QVector<CProfileInfo>   mProfile;   // profile information read from file
-        QVector<CProfileInfo>   mPreviousProfile;   // when comparing, keep previous profile information here
-        QVector<QString>            mClasses;   // list of distinct class names found in the profile information
+    QVector<CProfileInfo>   mProfile;   // profile information read from file
+    QVector<CProfileInfo>   mPreviousProfile;   // when comparing, keep previous profile information here
+    QVector<QString>            mClasses;   // list of distinct class names found in the profile information
 
-        QStringList   comm_columns;
-        QStringList   comm_diff_columns;
-        QStringList   prof_columns;
-        QStringList   prof_diff_columns;
-        QStringList   func_columns;
-        QStringList   func_diff_columns;
-        QStringList   pose_columns;
-        QStringList   pose_diff_columns;
-        QStringList   recentList;
-        QActionGroup* recentGroup;
-        QMenu*        recentMenu;
-        QVector<QAction*> actRecentSelect;
+    QStringList   comm_columns;
+    QStringList   comm_diff_columns;
+    QStringList   prof_columns;
+    QStringList   prof_diff_columns;
+    QStringList   func_columns;
+    QStringList   func_diff_columns;
+    QStringList   pose_columns;
+    QStringList   pose_diff_columns;
+    QStringList   recentList;
+    QActionGroup* recentGroup;
+    QMenu*        recentMenu;
+    QVector<QAction*> actRecentSelect;
 
-        QString       mGProfStdout;   // stdout from gprof command
-        QString       mGProfStderr;   // stderr from gprof command
-        QString       mGraphVizStdout;//  Stdout from the graphViz command
-        QString       mGraphVizStderr; // Stderr from the graphViz command
-        QString       mGraphVizDispStdout;//  Stdout from the graphViz command
-        QString       mGraphVizDispStderr; // Stderr from the graphViz command
-        QString       mFlatFilter;    // filter string for flat profile view
-        QFont         mListFont;      // font used to draw the text
-        bool          mAbbrevTemplates; // if true, templates are "abbreviates" (i.e. become <...>)
-        QDir          mCurDir;        // current directory
-        QToolBar*     fileToolBar;
-        QToolBar*     filterToolBar;
+    QString       mGProfStdout;   // stdout from gprof command
+    QString       mGProfStderr;   // stderr from gprof command
+    QString       mGraphVizStdout;//  Stdout from the graphViz command
+    QString       mGraphVizStderr; // Stderr from the graphViz command
+    QString       mGraphVizDispStdout;//  Stdout from the graphViz command
+    QString       mGraphVizDispStderr; // Stderr from the graphViz command
+    QString       mFlatFilter;    // filter string for flat profile view
+    QFont         mListFont;      // font used to draw the text
+    bool          mAbbrevTemplates; // if true, templates are "abbreviates" (i.e. become <...>)
+    QDir          mCurDir;        // current directory
+    QToolBar*     fileToolBar;
+    QToolBar*     filterToolBar;
 
 #ifdef HAVE_LIBQTREEMAP
-        QTreeMapOptions*        mTreemapOptions;
-        QTreeWidgetTreeMapWindow* mObjTreemap;
-        QTreeWidgetTreeMapWindow* mHierTreemap;
+    QTreeMapOptions*        mTreemapOptions;
+    QTreeWidgetTreeMapWindow* mObjTreemap;
+    QTreeWidgetTreeMapWindow* mHierTreemap;
 #endif
 
-    public:
-        QProfWidget (QWidget *parent = NULL, Qt::WindowFlags flags = 0);
-        ~QProfWidget ();
-        static QString getClassName (const QString& name);
+public:
+    QProfWidget (QWidget *parent = NULL, Qt::WindowFlags flags = 0);
+    ~QProfWidget ();
+    static QString getClassName (const QString& name);
 
-    public slots:
-        void settingsChanged ();
-        void loadSettings ();
-        void applySettings ();
+public slots:
+    void settingsChanged ();
+    void loadSettings ();
+    void applySettings ();
 
-        void openResultsFile ();
-        void compareFile ();
-        void openRecentFile (QAction* act);
-        void openCommandLineFiles ();
-        void doPrint ();
+    void openResultsFile ();
+    void compareFile ();
+    void openRecentFile (QAction* act);
+    void openCommandLineFiles ();
+    void doPrint ();
 
-        void profileEntryRightClick (const QPoint & iPoint);
-        void flatProfileFilterChanged (const QString &filter);
-        void generateCallGraph ();
-        void displayTreeMapView();
-        void aboutQt();
-        void about();
-        void quit();
-        void toggleTemplateAbbrev (bool state);
-        void selectListFont ();
-        void configure();
+    void profileEntryRightClick (const QPoint & iPoint);
+    void flatProfileFilterChanged (const QString &filter);
+    void generateCallGraph ();
+    void displayTreeMapView();
+    void aboutQt();
+    void about();
+    void quit();
+    void toggleTemplateAbbrev (bool state);
+    void selectListFont ();
+    void configure();
 
-    protected slots:
-        void gprofStdout ();
-        void gprofStderr ();
-        void graphVizStdout ();
-        void graphVizStderr ();
-        void graphVizDispStdout ();
-        void graphVizDispStderr ();
-        /*
-            signals:
-                void addRecentFile (const QUrl&);*/
+protected slots:
+    void gprofStdout ();
+    void gprofStderr ();
+    void graphVizStdout ();
+    void graphVizStderr ();
+    void graphVizDispStdout ();
+    void graphVizDispStderr ();
+    /*
+        signals:
+            void addRecentFile (const QUrl&);*/
 
-    private:
-        void initColFields();
-        void createToolBars();
-        void openFile (const QString &filename, short format, bool compare = false);
-        void prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler);
-        void postProcessProfile (bool compare);
-        void prepareHtmlPart(QTextBrowser* part);
-        bool parseArguments(const QStringList &args, QString& fileName, short& prof);
-        void addRecentFile (const QUrl&);
-        void openURLRequestDelayed( const QUrl &url);
-        void fillFlatProfileList ();
-        void hideFlatProfileList ();
-        void fillHierProfileList ();
-        void fillHierarchy (CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count);
-        void fillObjsProfileList ();
+private:
+    void initColFields();
+    void createToolBars();
+    void openFile (const QString &filename, short format, bool compare = false);
+    void prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler);
+    void postProcessProfile (bool compare);
+    void prepareHtmlPart(QTextBrowser* part);
+    bool parseArguments(const QStringList &args, QString& fileName, short& prof);
+    void addRecentFile (const QUrl&);
+    void openURLRequestDelayed( const QUrl &url);
+    void fillFlatProfileList ();
+    void hideFlatProfileList ();
+    void fillHierProfileList ();
+    void fillHierarchy (CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count);
+    void fillObjsProfileList ();
 
 //         void selectProfileItem (CProfileInfo *info);
-        void selectItemInView (QTreeWidgetItem *view, CProfileInfo *info, bool examineSubs);
+    void selectItemInView (QTreeWidgetItem *view, CProfileInfo *info, bool examineSubs);
 
-        void markForOutput (CProfileInfo *info);
+    void markForOutput (CProfileInfo *info);
 
-        QString removeTemplates (const QString& name);
+    QString removeTemplates (const QString& name);
 
-        QString processName;
-        CConfigure* mColorConfigure;
+    QString processName;
+    CConfigure* mColorConfigure;
 };
 
 #endif

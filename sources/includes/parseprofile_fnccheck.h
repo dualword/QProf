@@ -28,14 +28,14 @@ class CProfileInfo;
 
 class CParseProfile_fnccheck : public CParseProfile
 {
-    public:
-        CParseProfile_fnccheck(QTextStream& t, QVector<CProfileInfo>& profile);
-        ~CParseProfile_fnccheck() {};
+public:
+    CParseProfile_fnccheck(QTextStream& t, QVector<CProfileInfo>& profile);
+    ~CParseProfile_fnccheck() {};
 
-        bool valid () const;
+    bool valid () const;
 
-    private:
-        CParseProfile_fnccheck();
+private:
+    CParseProfile_fnccheck();
 
 };
 

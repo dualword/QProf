@@ -28,18 +28,18 @@
 
 class aboutForm : public QDialog, private Ui::aboutDialog
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        aboutForm(QWidget* parent = 0, Qt::WFlags fl = 0 );
-        ~aboutForm();
+public:
+    aboutForm(QWidget* parent = 0, Qt::WFlags fl = 0 );
+    ~aboutForm();
 
-    public slots:
+public slots:
 
-    protected:
+protected:
 
-    protected slots:
-        void onPayPal(void);
+protected slots:
+    void onPayPal(void);
 };
 
 #endif

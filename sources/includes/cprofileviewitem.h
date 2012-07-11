@@ -34,29 +34,29 @@ class CProfileInfo;
 class CProfileViewItem : public QTreeWidgetItem
 {
 //         Q_OBJECT
-    protected:
-        CProfileInfo*       mProfile;
+protected:
+    CProfileInfo*       mProfile;
 
-    public:
-        CProfileViewItem (QTreeWidget *parent,           CProfileInfo *profile);
-        CProfileViewItem (QTreeWidgetItem *parent,   CProfileInfo *profile);
-        CProfileViewItem (QTreeWidget *parent,           QTreeWidgetItem *after, CProfileInfo *profile);
-        CProfileViewItem (QTreeWidgetItem *parent,   QTreeWidgetItem *after, CProfileInfo *profile);
-        virtual ~CProfileViewItem ();
+public:
+    CProfileViewItem (QTreeWidget *parent,           CProfileInfo *profile);
+    CProfileViewItem (QTreeWidgetItem *parent,   CProfileInfo *profile);
+    CProfileViewItem (QTreeWidget *parent,           QTreeWidgetItem *after, CProfileInfo *profile);
+    CProfileViewItem (QTreeWidgetItem *parent,   QTreeWidgetItem *after, CProfileInfo *profile);
+    virtual ~CProfileViewItem ();
 
-        virtual void paintCell (QPainter * p, const QColor &cg, int column, int width, int align);
-        virtual QString getText (int column) const;
-        virtual QString key (int column, bool ascending) const;
+    virtual void paintCell (QPainter * p, const QColor &cg, int column, int width, int align);
+    virtual QString getText (int column) const;
+    virtual QString key (int column, bool ascending) const;
 
-        inline CProfileInfo* getProfile () const {
-            return mProfile;
-        }
+    inline CProfileInfo* getProfile () const {
+        return mProfile;
+    }
 
-    private:
-        void setRecursiveIcon ();
-        void setTextInformation();
-        static QString formatFloat (float n, int precision);
-        static QString formatSpeedDiff (float newSpeed, float oldSpeed);
+private:
+    void setRecursiveIcon ();
+    void setTextInformation();
+    static QString formatFloat (float n, int precision);
+    static QString formatSpeedDiff (float newSpeed, float oldSpeed);
 };
 
 #endif

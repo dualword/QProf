@@ -26,10 +26,10 @@
 
 class KProfFile : public QFile
 {
-        Q_OBJECT
-    public:
-        KProfFile();
-        ~KProfFile();
+    Q_OBJECT
+public:
+    KProfFile();
+    ~KProfFile();
 };
 
 #endif

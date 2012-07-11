@@ -32,36 +32,36 @@
 
 class KProfTopLevel : public QMainWindow
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    protected:
-        QWidget*    mProf;
-        QWidget*    kapp;
-        QAction*    mToggleTemplateAbbrev;
-        QAction*    mSelectFont;
-        QAction*    mGenCallGraphAction;
-        QAction*    mCompareFile;
-        QAction*    mRunApplication;
-        QAction*    mDisplayTreeMapAction;
-        QAction*    mConfigure;
+protected:
+    QWidget*    mProf;
+    QWidget*    kapp;
+    QAction*    mToggleTemplateAbbrev;
+    QAction*    mSelectFont;
+    QAction*    mGenCallGraphAction;
+    QAction*    mCompareFile;
+    QAction*    mRunApplication;
+    QAction*    mDisplayTreeMapAction;
+    QAction*    mConfigure;
 
-    public:
-        KProfTopLevel (QWidget *parent = 0, const char *name = NULL);
-        ~KProfTopLevel ();
+public:
+    KProfTopLevel (QWidget *parent = 0, const char *name = NULL);
+    ~KProfTopLevel ();
 
-        inline QAction* getToggleTemplateAbbrevAction () {
-            return mToggleTemplateAbbrev;
-        }
+    inline QAction* getToggleTemplateAbbrevAction () {
+        return mToggleTemplateAbbrev;
+    }
 
-    protected slots:
-        virtual bool queryExit ();
-        void toggleToolBar ();
-        void addRecentFile (const QUrl& url);
+protected slots:
+    virtual bool queryExit ();
+    void toggleToolBar ();
+    void addRecentFile (const QUrl& url);
 
-    private:
-        void setupActions ();
-        void loadSettings ();
-        void applySettings ();
+private:
+    void setupActions ();
+    void loadSettings ();
+    void applySettings ();
 };
 
 #endif
