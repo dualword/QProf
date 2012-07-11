@@ -57,9 +57,10 @@ class QTreeWidgetTreeMapWindow;
 class QTreeMapOptions;
 #endif
 
-#define FORMAT_GPROF    1                   // GNU gprof
-#define FORMAT_FNCCHECK 2            // Function Check
-#define FORMAT_POSE     3                // PalmOS Emulator
+#define FORMAT_GPROF       1            // GNU gprof
+#define FORMAT_FNCCHECK    2            // Function Check
+#define FORMAT_POSE        3            // PalmOS Emulator
+#define FORMAT_CALLGRIND   4            // Callgrind
 
 
 class CCallGraph : public QDialog, public Ui_CCallGraph

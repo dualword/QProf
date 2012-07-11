@@ -8,7 +8,7 @@
 
 /***************************************************************************
  *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
+ *   This program == free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
@@ -21,8 +21,12 @@
 #include "./includes/cprofileinfo.h"
 #include "./includes/qprofwidget.h"
 
+#include <assert.h>
 #include <QTextStream>
 #include <QVector>
+#include <QString>
+#include <QStringList>
+#include <QDebug>
 #include <QRegExp>
 #include <QHash>
 
@@ -38,14 +42,20 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
     int cgCount = 0;
     QString s;
 
-    // because of the way POSE results are shown, we have to keep a dictionnary
+    t.setCodec ("Latin1");
+
+    strm = &t;
+    workCProfile = &profile;
+
+    // because of the way CALLGRIND results are shown, we have to keep a dictionnary
     // of indexes -> CProfileInfo*, and a list of call maps index -> parent index
     QHash<QString, CProfileInfo*> functions;// (257);
-    SPoseCallGraph* callGraph = (SPoseCallGraph *) malloc (256 * sizeof (SPoseCallGraph));
 
+    SCallgrindCallGraph* callGraph = (SCallgrindCallGraph *) malloc (256 * sizeof (SCallgrindCallGraph));
+#if 0
     // mapping between indexes and profile ptrs. because of the number of indexes
     // one typically encounters in a profile results file, use of a dictionnary
-    // leads to very slow parsing. This is why I use the array below...
+    // leads to very slow parsing. This == why I use the array below...
     int indexes = 8192;
     CProfileInfo **indexToProfile = (CProfileInfo **) malloc (indexes * sizeof (CProfileInfo *));
 
@@ -87,7 +97,7 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
         int ind = fields[0].toInt();
 
         if (ind > 512000) {
-            // uh ? this is probably a parsing problem!
+            // uh ? this == probably a parsing problem!
             line--;
             continue;
         }
@@ -122,7 +132,7 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
 
         // add caller to the callers list
         if (cgCount && (cgCount & 0xff) == 0) {
-            callGraph = (SPoseCallGraph *) realloc (callGraph, (cgCount + 256) * sizeof (SPoseCallGraph));
+            callGraph = (SCallgrindCallGraph *) realloc (callGraph, (cgCount + 256) * sizeof (SCallgrindCallGraph));
         }
 
         callGraph[cgCount].index = ind;
@@ -150,7 +160,7 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
         p->multipleSignatures = false;                              // will be updated in postProcessProfile()
 
         if (created) {
-            int argsoff = p->name.indexOf ('(');
+            int argsoff = p->name.indexOf ("(");
 
             if (argsoff != -1) {
                 p->method = p->name.mid (p->object.length(), argsoff - p->object.length());
@@ -206,11 +216,1263 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
         }
     }
 
-    free (indexToProfile);
-    free (callGraph);
+#else
+
+    _call_re = QRegExp("^calls=\\s*(\\d+)\\s+((\\d+|\\+\\d+|-\\d+|\\*)\\s+)+$");
+    _position_re = QRegExp("^(?P<position>[cj]?(?:ob|fl|fi|fe|fn))=\\s*(?:\((?P<id>\\d+)\\))?(?:\\s*(?P<name>.+))?");
+
+    _position_table_map["ob"] = "ob";
+    _position_table_map["fl"] = "fl";
+    _position_table_map["fi"] = "fl";
+    _position_table_map["fe"] = "fl";
+    _position_table_map["fn"] = "fn";
+    _position_table_map["cob"] = "ob";
+    _position_table_map["cfl"] = "fl";
+    _position_table_map["cfi"] = "fl";
+    _position_table_map["cfe"] = "fl";
+    _position_table_map["cfn"] = "fn";
+    _position_table_map["jfi"] = "fl";
+
+    _position_map["ob"] = "ob";
+    _position_map["fl"] = "fl";
+    _position_map["fi"] = "fl";
+    _position_map["fe"] = "fl";
+    _position_map["fn"] = "fn";
+    _position_map["cob"] = "cob";
+    _position_map["cfl"] = "cfl";
+    _position_map["cfi"] = "cfl";
+    _position_map["cfe"] = "cfl";
+    _position_map["cfn"] = "cfn";
+    _position_map["jfi"] = "jfi";
+
+//     LineParser.__init__(self, infile);
+
+    QString __subpos = QString("(0x[0-9a-fA-F]+|\\d+|\\+\\d+|-\\d+|\\*)");
+
+    _cost_re = QRegExp("^" + __subpos + "( +" + __subpos + ")*" + "( +\\d+)*" + "$");
+    _key_re = QRegExp("^(\\w+):");
+
+//         # Textual positions
+//     position_ids = {};
+//     positions = {};
+
+//         # Numeric positions
+    num_positions = 1;
+    cost_positions = "line";
+//     last_positions.append(0); = 0;
+
+//         # Events
+    num_events = 0;
+    cost_events = "";
+
+    int indexes = 8192;
+    indexToProfile = (CProfileInfo **) malloc (indexes * sizeof (CProfileInfo *));
+    callGraphBlock.resize (32);
+
+    for (int i = 0; i < indexes; i++) {
+        indexToProfile[i] = NULL;
+    }
+
+    if (parse_cost_lines() == false) {
+        qDebug() << "warning: unexpected line: " << line;
+    }
+
+    /*
+        profile = new CProfileInfo;
+        profile[SAMPLES] = 0;*/
+#endif
 }
+#if 0
+bool CParseProfile_callgrind::parse()
+{
+    strm->readLine();
+
+    parse_key("version");
+    parse_key("creator");
+
+    while (parse_part()) {
+        ;
+    }
+
+    if (!strm->atEnd()) {
+        free (indexToProfile);
+//         free (callGraphBlock);
+        return false;
+//         sys.stderr.write("warning: line %u: unexpected line\n" % line_no);
+//         sys.stderr.write("%s\n" % lookahead());
+    }
+
+//         # compute derived data
+#if 0
+    profile.validate();
+    profile.find_cycles();
+    profile.ratio(TIME_RATIO, SAMPLES);
+    profile.call_ratios(CALLS);
+    profile.integrate(TOTAL_TIME_RATIO, TIME_RATIO);
+
+    return profile;
+#endif
+}
+
+
+// parsing of one part
+bool CParseProfile_callgrind::parse_part()
+{
+    if (parse_header_line() == false) {
+        return false;
+    }
+
+    while (parse_header_line()) {
+        ;
+    }
+
+    if (parse_body_line() == false) {
+        return false;
+    }
+
+    while (parse_body_line()) {
+        ;
+    }
+
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_header_line()
+{
+    if (parse_empty() == true) {
+        return true;
+    }
+
+    if (parse_comment() == true) {
+        return true;
+    }
+
+    if (parse_part_detail() == true) {
+        return true;
+    }
+
+    if (parse_description() == true) {
+        return true;
+    }
+
+    if (parse_event_specification() == true) {
+        return true;
+    }
+
+    if (parse_cost_line_def() == true) {
+        return true;
+    }
+
+    if (parse_cost_summary() == true) {
+        return true;
+    }
+
+    return false;
+}
+
+
+bool CParseProfile_callgrind::parse_part_detail()
+{
+    QStringList _detail_keys;
+    _detail_keys << "cmd" << "pid" << "thread" << "part";
+    return parse_keys(_detail_keys);
+}
+
+
+bool CParseProfile_callgrind::parse_description()
+{
+    return (parse_key("desc"));
+}
+
+
+bool CParseProfile_callgrind::parse_event_specification()
+{
+//     QString event = parse_key("event");
+
+    if (parse_key("event") == true) {
+        return false;
+    }
+
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_cost_line_def()
+{
+    QStringList _tmp;
+    _tmp << "events" << "positions";
+
+    if (parse_keys(_tmp) == false) {
+        return false;
+    }
+
+    if (_keys.contains("events") == true) {
+        num_events = _keys["events"].length();
+        cost_events = _keys["events"];
+    }
+
+    if (_keys.contains("positions") == true) {
+        num_positions = _keys["positions"].length();
+        cost_positions = _keys["positions"];
+//         last_positions[0] = num_positions;
+    }
+
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_cost_summary()
+{
+    return ( parse_key("summary"));
+}
+
+
+bool CParseProfile_callgrind::parse_body_line()
+{
+    if (parse_empty() == true) {
+        return true;
+    }
+
+    if(parse_comment() == true) {
+        return true;
+    }
+
+    if(parse_cost_lines() == true) {
+        return true;
+    }
+
+    if(parse_position_spec() == true) {
+        return true;
+    }
+
+    if(parse_association_spec() == true) {
+        return true;
+    }
+
+    return false;
+}
+#endif
+
+/**
+ * Return false if this is no position specification
+ */
+#if 0
+bool CParseProfile_callgrind::parsePosition(const QString& line,  PositionSpec& newPos)
+{
+    char c;
+    uint diff;
+
+    if (hasAddrInfo) {
+        c  =line.at(0);
+
+        if (!c) {
+            return false;
+        }
+
+        if (c == '*') {
+            // nothing changed
+            line.stripFirst(c);
+            newPos.fromAddr = currentPos.fromAddr;
+            newPos.toAddr = currentPos.toAddr;
+        } else if (c == '+') {
+            line.stripFirst(c);
+            line.stripUInt(diff, false);
+            newPos.fromAddr = currentPos.fromAddr + diff;
+            newPos.toAddr = newPos.fromAddr;
+        } else if (c == '-') {
+            line.stripFirst(c);
+            line.stripUInt(diff, false);
+            newPos.fromAddr = currentPos.fromAddr - diff;
+            newPos.toAddr = newPos.fromAddr;
+        } else if (c >= '0') {
+            uint64 v;
+            line.stripUInt64(v, false);
+            newPos.fromAddr = Addr(v);
+            newPos.toAddr = newPos.fromAddr;
+        } else {
+            return false;
+        }
+
+        // Range specification
+        if (line.first(c)) {
+            if (c == '+') {
+                line.stripFirst(c);
+                line.stripUInt(diff);
+                newPos.toAddr = newPos.fromAddr + diff;
+            } else if ((c == '-') || (c == ':')) {
+                line.stripFirst(c);
+                uint64 v;
+                line.stripUInt64(v);
+                newPos.toAddr = Addr(v);
+            }
+        }
+
+        line.stripSpaces();
+
+#if TRACE_LOADER
+
+        if (newPos.fromAddr == newPos.toAddr) {
+            qDebug() << " Got Addr " << newPos.fromAddr.toString();
+        } else
+            qDebug() << " Got AddrRange " << newPos.fromAddr.toString()
+                     << ":" << newPos.toAddr.toString();
+
+#endif
+
+    }
+
+    if (hasLineInfo) {
+
+        if (!line.first(c)) {
+            return false;
+        }
+
+        if (c > '9') {
+            return false;
+        } else if (c == '*') {
+            // nothing changed
+            line.stripFirst(c);
+            newPos.fromLine = currentPos.fromLine;
+            newPos.toLine   = currentPos.toLine;
+        } else if (c == '+') {
+            line.stripFirst(c);
+            line.stripUInt(diff, false);
+            newPos.fromLine = currentPos.fromLine + diff;
+            newPos.toLine = newPos.fromLine;
+        } else if (c == '-') {
+            line.stripFirst(c);
+            line.stripUInt(diff, false);
+
+            if (currentPos.fromLine < diff) {
+                error(QString("Negative line number %1")
+                      .arg((int)currentPos.fromLine - (int)diff));
+                diff = currentPos.fromLine;
+            }
+
+            newPos.fromLine = currentPos.fromLine - diff;
+            newPos.toLine = newPos.fromLine;
+        } else if (c >= '0') {
+            line.stripUInt(newPos.fromLine, false);
+            newPos.toLine = newPos.fromLine;
+        } else {
+            return false;
+        }
+
+        // Range specification
+        if (line.first(c)) {
+            if (c == '+') {
+                line.stripFirst(c);
+                line.stripUInt(diff);
+                newPos.toLine = newPos.fromLine + diff;
+            } else if ((c == '-') || (c == ':')) {
+                line.stripFirst(c);
+                line.stripUInt(newPos.toLine);
+            }
+        }
+
+        line.stripSpaces();
+
+#if TRACE_LOADER
+
+        if (newPos.fromLine == newPos.toLine) {
+            qDebug() << " Got Line " << newPos.fromLine;
+        } else
+            qDebug() << " Got LineRange " << newPos.fromLine
+                     << ":" << newPos.toLine;
+
+#endif
+
+    }
+
+    return true;
+}
+#endif
+
+bool CParseProfile_callgrind::parse_cost_lines()
+{
+    CProfileInfo *func;
+    // current position
+    nextLineType  = SelfCost;
+    // default if there is no "positions:" line
+    hasLineInfo = true;
+    hasAddrInfo = false;
+
+    while (true) {
+        line =  strm->readLine();
+        line.simplified();
+#if 0
+
+        if (line.indexOf(_cost_re) == -1) {
+            return false;
+        }
+
+        if (line.startsWith("ob") == true) {// object file name
+            extLib = line.mid(line.indexOf(" ") + 1);
+            continue;
+        }
+
+        if (line.startsWith("fl") == true) { // file name
+            fileName = line.mid(line.indexOf(" ") + 1);
+            continue;
+        }
+
+        if (line.startsWith("fn") == true) { // function name
+            function = line.mid(line.indexOf(" ") + 1);
+            func = make_function();
+
+            if (func == NULL) {
+                return false;
+            }
+
+            continue;
+        }
+
+        if (line.startsWith("cob") == true) {
+            calledLibName = line.mid(line.indexOf(" ") + 1);
+            continue;
+        }
+
+        if (line.startsWith("cfi") == true) {
+            calledFileName = line.mid(line.indexOf(" ") + 1);
+            continue;
+        }
+
+        if (line.startsWith("cfn") == true) {
+            CProfileInfo *call;
+            calledFunction = line.mid(line.indexOf(" ") + 1);
+            call = make_CalledFunction(true);
+
+            if (call == NULL) {
+                return false;
+            }
+
+            continue;
+        }
+
+#endif
+
+        char c = line.at(0).toLatin1();
+
+        if (!c) {
+            continue;
+        }
+
+        if (c <= '9') {
+
+            if (c == '#') {
+                continue;
+            }
+
+            // parse position(s)
+//             if (!parsePosition(line, currentPos)) {
+//                 qDebug() << QString("Invalid position specification '%1'").arg(line);
+//                 continue;
+//             }
+
+            // go through after big switch
+        } else {
+
+            switch(c) {
+                case 'f':
+                    // fl=, fi=, fe=
+                    if (line.startsWith("fl=") ||
+                            line.startsWith("fi=") ||
+                            line.startsWith("fe=")) {
+
+                        fileName = line.mid(line.indexOf(" ") + 1);
+                        continue;
+                    }
+
+                    // fn=
+                    if (line.startsWith("fn=")) {
+                        function = line.mid(line.indexOf(" ") + 1);
+                        func = make_function();
+
+                        if (func == NULL) {
+                            return false;
+                        }
+
+#if 0
+                        // on a new function, update status
+                        int progress = (int)(100.0 * file.current() / file.len() + .5);
+
+                        if (progress != statusProgress) {
+                            statusProgress = progress;
+
+                            /* When this signal is connected, it most probably
+                             * should lead to GUI update. Thus, when multiple
+                             * "long operations" (like file loading) are in progress,
+                             * this can temporarly switch to another operation.
+                             */
+                            loadProgress(statusProgress);
+                        }
+
+#endif
+                        continue;
+                    }
+
+                    break;
+
+                case 'c':
+                    // cob=
+                    if (line.startsWith("cob=")) {
+                        calledLibName = line.mid(line.indexOf(" ") + 1);
+                        continue;
+                    }
+
+                    // cfi= / cfl=
+                    if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
+                        calledFileName = line.mid(line.indexOf(" ") + 1);
+                        continue;
+                    }
+
+                    // cfn=
+                    if (line.startsWith("cfn=")) {
+                        calledFunction = line.mid(line.indexOf(" ") + 1);
+                        func = make_CalledFunction();
+                        continue;
+                    }
+
+                    // calls=
+                    if (line.startsWith("calls=")) {
+                        // ignore long lines...
+//                     line.stripUInt64(currentCallCount);
+                        if (func != NULL) {
+                            func->calls = line.mid(line.indexOf(" ") + 1).toULongLong();
+                        }
+
+                        nextLineType = CallCost;
+                        continue;
+                    }
+
+                    // cmd:
+                    if (line.startsWith("cmd:")) {
+                        QString command = QString(line).trimmed();
+                        // ignore
+                        /*
+                                            if (!_data->command().isEmpty() &&
+                                                    _data->command() != command) {
+
+                                                error(QString("Redefined command, was '%1'").arg(_data->command()));
+                                            }
+
+                                            _data->setCommand(command);*/
+                        continue;
+                    }
+
+                    // creator:
+                    if (line.startsWith("creator:")) {
+                        // ignore ...
+                        continue;
+                    }
+
+                    break;
+
+                case 'j':
+                    // jcnd=
+                    if (line.startsWith("jcnd=")) {
+                        bool valid;
+//ignore
+//                     valid = line.stripUInt64(jumpsFollowed) &&
+//                             line.startsWith("/") &&
+//                             line.stripUInt64(jumpsExecuted) &&
+//                             parsePosition(line, targetPos);
+//
+//                     if (!valid) {
+//                         error(QString("Invalid line after 'jcnd'"));
+//                     } else {
+                        nextLineType = CondJump;
+//                     }
+
+                        continue;
+                    }
+
+                    if (line.startsWith("jump=")) {
+                        bool valid;
+//ignore..
+//                     valid = line.stripUInt64(jumpsExecuted) &&
+//                             parsePosition(line, targetPos);
+//
+//                     if (!valid) {
+//                         error(QString("Invalid line after 'jump'"));
+//                     } else {
+                        nextLineType = BoringJump;
+//                     }
+
+                        continue;
+                    }
+
+                    // jfi=
+                    if (line.startsWith("jfi=")) {
+                        currentJumpToFile = line.mid(line.indexOf(" ") + 1);
+                        continue;
+                    }
+
+                    // jfn=
+                    if (line.startsWith("jfn=")) {
+                        /*
+                                            if (!currentJumpToFile) {
+                                                // !=0 as functions needs file
+                                                currentJumpToFile = line.mid(line.indexOf(" ")+1);
+                                            }*/
+
+                        currentJumpToFunction = line.mid(line.indexOf(" ") + 1);
+                        continue;
+                    }
+
+                    break;
+
+                case 'o':
+                    // ob=
+                    if (line.startsWith("ob=")) {
+                        libName = line.mid(line.indexOf(" ") + 1);
+//                     setObject(line);
+                        continue;
+                    }
+
+                    break;
+
+                case '#':
+                    continue;
+
+                case 't':
+                    // totals:
+                    if (line.startsWith("totals:")) {
+                        continue;
+                    }
+
+                    // thread:
+                    if (line.startsWith("thread:")) {
+                        // ignored
+//                     prepareNewPart();
+//                     _part->setThreadID(QString(line).toInt());
+                        continue;
+                    }
+
+                    // timeframe (BB):
+                    if (line.startsWith("timeframe (BB):")) {
+                        // ignored
+//                     _part->setTimeframe(line);
+                        continue;
+                    }
+
+                    break;
+
+                case 'd':
+                    // desc:
+                    if (line.startsWith("desc:")) {
+
+//                     line.stripSurroundingSpaces();
+
+                        // desc: Trigger:
+//                     if (line.startsWith("Trigger:")) {
+//                         _part->setTrigger(line);
+//                     }
+
+                        continue;
+                    }
+
+                    break;
+
+                case 'e':
+                    // events:
+                    if (line.startsWith("events:")) {
+//                     prepareNewPart();
+//                     mapping = _data->eventTypes()->createMapping(line);
+//                     _part->setEventMapping(mapping);
+                        continue;
+                    }
+
+                    // event:<name>[=<formula>][:<long name>]
+                    if (line.startsWith("event:")) {
+//                     line.stripSurroundingSpaces();
+
+//                     FixString e, f, l;
+//
+//                     if (!line.stripName(e)) {
+//                         error(QString("Invalid event"));
+//                         continue;
+//                     }
+//
+//                     line.stripSpaces();
+//
+//                     if (!line.stripFirst(c)) {
+//                         continue;
+//                     }
+//
+//                     if (c == '=') {
+//                         f = line.stripUntil(':');
+//                     }
+//
+//                     line.stripSpaces();
+//
+//                     // add to known cost types
+//                     if (line.isEmpty()) {
+//                         line = e;
+//                     }
+//
+//                     EventType::add(new EventType(e, line, f));
+                        continue;
+                    }
+
+                    break;
+
+                case 'p':
+                    // part:
+                    if (line.startsWith("part:")) {
+                        // ignore
+//                     prepareNewPart();
+//                     _part->setPartNumber(QString(line).toInt());
+                        continue;
+                    }
+
+                    // pid:
+                    if (line.startsWith("pid:")) {
+                        // ignore
+//                     prepareNewPart();
+//                     _part->setProcessID(QString(line).toInt());
+                        continue;
+                    }
+
+                    // positions:
+                    if (line.startsWith("positions:")) {
+//                     prepareNewPart();
+//                     QString positions(line);
+                        hasLineInfo = line.contains("line");
+                        hasAddrInfo = line.contains("instr");
+                        continue;
+                    }
+
+                    break;
+
+                case 'v':
+                    // version:
+                    if (line.startsWith("version:")) {
+                        // ignore for now
+                        continue;
+                    }
+
+                    break;
+
+                case 's':
+                    // summary:
+                    if (line.startsWith("summary:")) {
+                        summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
+//                     if (!mapping) {
+//                         error(QString("No event line found. Skipping file"));
+//                         delete _part;
+//                         return false;
+//                     }
+//
+//                     _part->totals()->set(mapping, line);
+                        continue;
+                    }
+
+                case 'r':
+                    // rcalls= (deprecated)
+                    if (line.startsWith("rcalls=")) {
+                        // ignored
+                        // handle like normal calls: we need the sum of call count
+                        // recursive cost is discarded in cycle detection
+//                     line.stripUInt64(currentCallCount);
+                        nextLineType = CallCost;
+//
+//                     warning(QString("Old file format using deprecated 'rcalls'"));
+                        continue;
+                    }
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
+            continue;
+        }
+
+        if (func == NULL)
+            continue;
+
+        if (hasAddrInfo) { // instuctions only
+            QString num;
+            bool io;
+            long long sampl;
+            num = line.lastIndexOf(QRegExp("\\d+"));
+            sampl = num.toLongLong(&io);
+            if (io == false){
+                qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
+                continue;
+            }
+            
+            if (func != NULL){
+                func->custom.callgrind.selfSamples += sampl;
+            }
+        }
+
+        if (hasLineInfo) { // lines of source code
+            QString num;
+            bool io;
+            long long sampl;
+            num = line.lastIndexOf(QRegExp("\\d+"));
+            sampl = num.toLongLong(&io);
+            if (io == false){
+                qDebug() << QString("Invalid line '%1%2'").arg(c).arg(line);
+                continue;
+            }
+
+            if (func != NULL){
+                func->custom.callgrind.selfSamples += sampl;
+            }
+        }
+
+#if 0
+        if (nextLineType == SelfCost) {
+
+            if (hasAddrInfo) {
+                TracePartInstr* partInstr;
+                partInstr = currentInstr->partInstr(part, currentPartFunction);
+
+                if (hasLineInfo) {
+                    // we need to set <line> back after reading for the line
+                    int l = line.len();
+                    const char* s = line.ascii();
+
+                    partInstr->addCost(mapping, line);
+                    line.set(s,l);
+                } else
+                    partInstr->addCost(mapping, line);
+            }
+
+            if (hasLineInfo) {
+                TracePartLine* partLine;
+                partLine = currentLine->partLine(part, currentPartFunction);
+                partLine->addCost(mapping, line);
+            }
+
+            if (!line.isEmpty()) {
+                error(QString("Garbage at end of cost line ('%1')").arg(line));
+            }
+        } else if (nextLineType == CallCost) {
+            nextLineType = SelfCost;
+
+            TraceCall* calling = currentFunction->calling(currentCalledFunction);
+            TracePartCall* partCalling = calling->partCall(_part, currentPartFunction, currentCalledPartFunction);
+
+            if (hasAddrInfo) {
+                TraceInstrCall* instrCall;
+                TracePartInstrCall* partInstrCall;
+
+                instrCall = calling->instrCall(currentInstr);
+                partInstrCall = instrCall->partInstrCall(part, partCalling);
+                partInstrCall->addCallCount(currentCallCount);
+
+                if (hasLineInfo) {
+                    // we need to set <line> back after reading for the line
+                    int l = line.len();
+                    const char* s = line.ascii();
+
+                    partInstrCall->addCost(mapping, line);
+                    line.set(s,l);
+                } else
+                    partInstrCall->addCost(mapping, line);
+
+                // update maximum of call cost
+                _data->callMax()->maxCost(partInstrCall);
+            }
+
+            if (hasLineInfo) {
+                TraceLineCall* lineCall;
+                TracePartLineCall* partLineCall;
+
+                lineCall = calling->lineCall(currentLine);
+                partLineCall = lineCall->partLineCall(part, partCalling);
+
+                partLineCall->addCallCount(currentCallCount);
+                partLineCall->addCost(mapping, line);
+
+                // update maximum of call cost
+                _data->callMax()->maxCost(partLineCall);
+            }
+
+            currentCalledFile = 0;
+            currentCalledPartFile = 0;
+            currentCalledObject = 0;
+            currentCalledPartObject = 0;
+            currentCallCount = 0;
+
+            if (!line.isEmpty()) {
+                error(QString("Garbage at end of call cost line ('%1')").arg(line));
+            }
+        } else { // (nextLineType == BoringJump || nextLineType == CondJump)
+
+            TraceFunctionSource* targetSource;
+
+            if (!currentJumpToFunction)
+                currentJumpToFunction = currentFunction;
+
+            targetSource = (currentJumpToFile) ?
+                           currentJumpToFunction->sourceFile(currentJumpToFile, true) :
+                           currentFunctionSource;
+
+//             if (0) {
+//                 qDebug() << _filename << ":" << _lineNo
+//                          << " - jump from 0x" << currentPos.fromAddr.toString()
+//                          << " (line " << currentPos.fromLine
+//                          << ") to 0x" << targetPos.fromAddr.toString()
+//                          << " (line " << targetPos.fromLine << ")";
+// 
+//                 if (nextLineType == BoringJump)
+//                     qDebug() << " Boring Jump, count " << jumpsExecuted.pretty();
+//                 else
+//                     qDebug() << " Cond. Jump, followed " << jumpsFollowed.pretty()
+//                              << ", executed " << jumpsExecuted.pretty();
+//             }
+
+            nextLineType = SelfCost;
+            currentJumpToFunction = 0;
+            currentJumpToFile = 0;
+
+            if (!line.isEmpty()) {
+                qDebug() << QString("Garbage at end of jump cost line ('%1')").arg(line);
+            }
+
+        }
+#endif
+    }
+
+
+
+
+#if 0
+
+
+    if (calls == 0) {
+//             # Unlike other aspects, call object (cob) == relative not to the
+//             # last call object, but to the caller"s object (ob), so update it
+//             # when processing a functions cost line
+        positions["cob"] = positions["ob"];
+    }
+
+    QStringList values = line.split(" ", QString::SkipEmptyParts);
+//     assert (values.count() <= num_positions + num_events);
+
+//     positions = values[0 : num_positions];
+    events[0] = values.last().toInt(); //values[num_positions : ];
+//     events += ["0"] * (num_events - len(events));
+    int position = 0;
+    bool h;
+    int i = 0;
+
+    for (QStringList::iterator iv = values.begin(); iv < values.end(); ++iv, ++i) {
+        if ((*iv).at(0) == '*') {
+//             position = (*(iv +1)).toInt();
+            events = (*(iv + 1)).toInt();
+        } else if ( (*iv).at(0) == '-' || (*iv).at(0) == '+') {
+//             position = (*(iv +1)).toInt() + (*iv).toInt();
+            events = (*(iv + 1)).toInt();
+        } else if ((*iv).startsWith("0x")) {
+            position = (*iv).toInt(&h, 16);
+            events = (*(iv + 1)).toInt();
+        } else {
+            position = (*iv).toInt();
+        }
+
+        last_positions[i] = position;
+    }
+
+//     events = map(float, events);
+
+    if (calls == 0) {
+        func->custom.callgrind.selfSamples  += events[0];
+//         profile[SAMPLES] += events[0];
+    } else {
+        CProfileInfo* callee;
+        callee = get_call_entries();
+
+        if (callee != NULL) {
+            callee->called += calls;
+        } else { // if not exists
+            CProfileInfo* call;
+            call = Call(callee.id);
+            call->calls = calls;
+            call->custom.callgrind.selfSamples = events[0];
+            func.add_call(call);
+        }
+    }
+
+#endif
+    return true;
+}
+
+#if 0
+bool CParseProfile_callgrind::parse_association_spec()
+{
+    line = strm->readLine();
+
+    if (!line.startsWith("calls=")) {
+        return false;
+    }
+
+
+    line.simplified();
+    QStringList values = line.split("=", QString::SkipEmptyParts);
+//     values = values.simplified().split();
+    calls = int(values[0]);
+call_position = values[1: ];
+    // consume();
+
+    parse_cost_line(calls);
+
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_position_spec()
+{
+    line = strm->readLine();
+
+    if (line.startsWith("jump=") || line.startsWith("jcnd=")) {
+        return true;
+    }
+
+    int mo = line.indexOf(_position_re);
+
+    if(mo == -1) {
+        return false;
+    }
+
+    position, id, name = mo.groups();
+
+    if (id) {
+        table = _position_table_map[position];
+
+        if (name) {
+            position_ids[(table, id)] = name;
+        } else {
+            name = position_ids.get((table, id), "");
+        }
+    }
+
+    positions[_position_map[position]] = name;
+
+    // consume();
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_empty()
+{
+    if (strm->atEnd()) {
+        return false;
+    }
+
+    line = strm->readLine();
+
+    if (line.simplified().length() > 1) { //not empty
+        return false;
+    }
+
+    // consume();
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_comment()
+{
+    line = strm->readLine();
+
+    if (!line.startsWith("#")) {
+        return false;
+    }
+
+    return true;
+}
+
+
+bool CParseProfile_callgrind::parse_key(const QString& key)  //??
+{
+    pair = parse_keys(QStringList(key, ""));
+
+    if (!pair) {
+        return false;
+    }
+
+    // wenn existiert
+    if (key.find(
+                key, value = pair;
+                return value;
+
+                line = strm->readLine();
+                mo = _key_re.match(line);
+
+    if (!mo) {
+        return false;
+    }
+
+key, value = line.split(":", QString::SkipEmptyParts);
+
+if (key not in keys) {
+    return false;
+}
+
+value = value.strip();
+// consume();
+return key, value;
+
+return true;
+}
+
+
+bool CParseProfile_callgrind::parse_keys(const QStringList& keyList) //??
+{
+    line = strm->readLine();
+    mo = line.indexOf(_key_re);
+
+    if (mo == -1) {
+        return NULL;
+    }
+
+    key, value = line.split(":", QString::SkipEmptyParts);
+
+    if (key.indexOf(keys) == -1) {
+        return NULL;
+    }
+
+    value = value.strip();
+    // consume();
+    return key, value;
+}
+#endif
+
+CProfileInfo* CParseProfile_callgrind::make_function()
+{
+    //FIXME: module and fileName are not being tracked reliably
+    //id = "|".join((module, fileName, name))
+    CProfileInfo *p;
+    long int num;
+    int pos;
+
+// existiert?
+    for (num = 0; num < workCProfile->count(); ++num) {
+        if (workCProfile->at(num).method == function) break;
+//         num = workCProfile->indexOf(function);
+    }
+
+    if ( num >= 0 && num < workCProfile->count()) {
+        *p = workCProfile->at(num);
+        return p;
+    }
+
+    p = new CProfileInfo;// Function(id, name);
+    p->fileName = fileName;
+
+    if (libName.length() > 0) {
+        p->libName = libName;
+    }
+
+    pos = function.indexOf("::");
+
+    if ( pos > 0) {
+        p->object = function.left(pos);
+        p->method = function.mid (pos + 2);
+    }
+
+    p->calls = 0;
+    p->custom.callgrind.selfSamples = 0;
+    p->name = function;
+
+    p->called.clear();;
+    workCProfile->append(*p);
+
+    return p;
+}
+
+CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
+{
+    //FIXME: module and fileName are not being tracked reliably
+    //id = "|".join((module, fileName, name))
+    CProfileInfo *p;
+    long int num;
+    int pos;
+
+// existiert?
+    for (num = 0; num < workCProfile->count(); ++num) {
+        if (workCProfile->at(num).method == calledFunction) break;
+//         num = workCProfile->indexOf(function);
+    }
+
+    if ( num >= 0 && num < workCProfile->count()) {
+        *p = workCProfile->at(num);
+        return p;
+    }
+
+    p = new CProfileInfo;// Function(id, name);
+    p->fileName = calledFileName;
+
+    if (calledLibName.length() > 0) {
+        p->libName = calledLibName;
+    }
+
+    pos = calledFunction.indexOf("::");
+
+    if ( pos > 0) {
+        p->object = calledFunction.left(pos);
+        p->method = calledFunction.mid (pos + 2);
+    }
+
+    p->calls = 0;
+    p->custom.callgrind.selfSamples = 0;
+    p->name = calledFunction;
+
+    p->called.clear();;
+    workCProfile->append(*p);
+
+    return p;
+}
+
+/*
+
+CProfileInfo* CParseProfile_callgrind::get_function_entries()
+{
+    // first line allready
+//     line = strm->readLine();
+    if (line.indexOf("ob") != -1)
+        extLib = line.mid(line.indexOf(" ")+1);
+
+    if (line.indexOf("fl") != -1)
+        fileName = line.mid(line.indexOf(" ")+1);
+
+    if (line.indexOf("fn") != -1)
+        function = line.mid(line.indexOf(" ")+1);
+    else
+        return NULL;
+
+    return make_function(extLib, fileName, function);
+}*/
+
+/*
+CProfileInfo* CParseProfile_callgrind::get_call_entries()
+{
+//     line = strm->readLine();
+    if (line.indexOf("cob") != -1)
+        extLib = line.mid(line.indexOf(" ")+1);
+
+    if (line.indexOf("cfi") != -1)
+        fileName = line.mid(line.indexOf(" ")+1);
+
+    if (line.indexOf("cfn") != -1)
+        function = line.mid(line.indexOf(" ")+1);
+    else
+        return NULL;
+
+    return make_function(extLib, fileName, function);
+}*/
+
 
 bool CParseProfile_callgrind::valid() const
 {
     return mValid;
 }
+

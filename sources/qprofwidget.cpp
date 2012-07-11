@@ -75,6 +75,7 @@
 #include "./includes/clientsidemap.h"
 #include "./includes/parseprofile_gprof.h"
 #include "./includes/parseprofile_fnccheck.h"
+#include "./includes/parseprofile_callgrind.h"
 #include "./includes/parseprofile_pose.h"
 #include "./includes/qproffile.h"
 
@@ -155,7 +156,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     connect (actionAbout_Qt, SIGNAL (triggered ()), this, SLOT (aboutQt ()));
 
     connect(mCallTree, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
-     
+
     connect(mMethod, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
 
 
@@ -270,7 +271,7 @@ void QProfWidget::configure()
 //opens the required URL in the method widget.
 void QProfWidget::openURLRequestDelayed( const QUrl &url)
 {
-     mMethod->setSource(url);
+    mMethod->setSource(url);
 //     mMethod->openURL(url);
 }
 
@@ -303,6 +304,16 @@ void QProfWidget::prepareProfileView (QTreeWidget *view, bool rootIsDecorated, s
             break;
 
         case FORMAT_POSE:
+
+            if (sDiffMode) {
+                vPtr = &pose_diff_columns;
+            } else {
+                vPtr = &pose_columns;
+            }
+
+            break;
+
+        case FORMAT_CALLGRIND:
 
             if (sDiffMode) {
                 vPtr = &pose_diff_columns;
@@ -447,6 +458,8 @@ void QProfWidget::openRecentFile (QAction* act)
         openFile (filename, FORMAT_FNCCHECK, false);
     } else if (protocol == "file-pose") {
         openFile (filename, FORMAT_POSE, false);
+    } else if (protocol == "file-callgrind") {
+        openFile (filename, FORMAT_CALLGRIND, false);
     } else {
         QMessageBox::warning (this, tr ("Unknown format selected"), tr ("Please select existing format"));
 //         openFile (filename, (QProfWidget::short) - 1);
@@ -505,11 +518,21 @@ void QProfWidget::openResultsFile ()
     bgroup->addButton(fmtPOSE);
     hlayout->addWidget(fmtPOSE);
 
+
+    QRadioButton *fmtCALLG = new QRadioButton (tr ("Callgrind"));
+    fmtCALLG->setDisabled(true);
+    bgroup->addButton(fmtCALLG);
+    hlayout->addWidget(fmtCALLG);
+    
     // reset format button to last used format
     if (sLastFileFormat == FORMAT_GPROF && !fmtGPROF->isChecked()) {
         fmtGPROF->toggle ();
     } else if (sLastFileFormat == FORMAT_FNCCHECK && !fmtFNCCHECK->isChecked ()) {
         fmtFNCCHECK->toggle ();
+    } else if (!fmtCALLG->isChecked ()) {
+        fmtCALLG->toggle ();
+    } else if (!fmtCALLG->isChecked ()) {
+        fmtCALLG->toggle ();
     } else if (!fmtPOSE->isChecked ()) {
         fmtPOSE->toggle ();
     }
@@ -555,9 +578,13 @@ void QProfWidget::openResultsFile ()
     QString filename = fd.selectedFiles().at(0);//.selectedFile();
 
     if (!filename.isEmpty()) {
-        sLastFileFormat =   fmtGPROF->isChecked () ? FORMAT_GPROF :
-                            fmtFNCCHECK->isChecked () ? FORMAT_FNCCHECK :
-                            FORMAT_POSE;
+        if (fmtGPROF->isChecked () == true)
+            sLastFileFormat = FORMAT_GPROF;
+        else if (fmtFNCCHECK->isChecked () == true)
+            sLastFileFormat = FORMAT_FNCCHECK;
+        else if (fmtCALLG->isChecked () == true)
+            sLastFileFormat = FORMAT_CALLGRIND;
+        else sLastFileFormat = FORMAT_POSE;
 
         //print a debug message
         switch(sLastFileFormat) {
@@ -569,6 +596,9 @@ void QProfWidget::openResultsFile ()
                 break;
             case    FORMAT_POSE:
                 qDebug("Suppose Fileformat is \"PalmOS Emulator\"");
+                break;
+            case    FORMAT_CALLGRIND:
+                qDebug("Suppose Fileformat is \"Callgrind\"");
                 break;
         }
 
@@ -620,6 +650,9 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
             } else if (profiler == "fnccheck") {
                 prof = FORMAT_FNCCHECK;
                 success = true;
+            } else if (profiler == "callgrind") {
+                prof = FORMAT_CALLGRIND;
+                success = true;
             } /*else if (profiler == "pose") {
 
                 prof = FORMAT_POSE;
@@ -648,7 +681,7 @@ void QProfWidget::createToolBars()
     QSize sz = flatFilter->baseSize();
     flatFilter->setMaximumWidth(300);
     flatFilter->setWhatsThis( tr (  "Type text in this field to filter the display "
-                           "and only show the functions/methods whose name match the text."));
+                                    "and only show the functions/methods whose name match the text."));
 
     filterToolBar->addWidget(lab);
 //     filterToolBar->addWidget (new QSpacer(10, 10));
@@ -829,7 +862,9 @@ void QProfWidget::openFile (const QString &filename, short format, bool compare)
             CParseProfile_gprof (t, mProfile);
         } else if (format == FORMAT_FNCCHECK) {
             CParseProfile_fnccheck (t, mProfile);
-        } else {
+        } else if (format == FORMAT_CALLGRIND) {
+            CParseProfile_callgrind (t, mProfile);
+        }  else {
             CParseProfile_pose (t, mProfile);
         }
     }
@@ -856,7 +891,19 @@ void QProfWidget::openFile (const QString &filename, short format, bool compare)
 
     // make sure we add the recent file (this also changes the window title)
     QUrl url (filename);
-    url.setScheme (isExec ? "file" : sLastFileFormat == FORMAT_GPROF ? "file-gprof" : sLastFileFormat == FORMAT_FNCCHECK ? "file-fnccheck" : "file-pose");
+    QString schem;
+    if (isExec == true )
+        schem = "file";
+    else if (sLastFileFormat == FORMAT_GPROF)
+        schem = "file-gprof";
+    else if (sLastFileFormat == FORMAT_FNCCHECK)
+        schem = "file-fnccheck";
+    else if (sLastFileFormat == FORMAT_CALLGRIND)
+        schem = "file-callgrind";
+    else
+        schem = "file-pose";
+    
+    url.setScheme (schem);
 //     qDebug() << url;
     addRecentFile (url);
 

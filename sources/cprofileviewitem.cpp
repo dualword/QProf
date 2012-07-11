@@ -246,6 +246,14 @@ QString CProfileViewItem::getText (int column) const
                     if (column == col_maxMsPerCall) {
                         return formatFloat (mProfile->custom.fnccheck.maxMsPerCall, 3);
                     }
+                } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                    if (column == col_selfCycles) {
+                        return QString::number (mProfile->custom.callgrind.selfSamples);
+                    }
+
+                    if (column == col_cumCycles) {
+                        return QString::number (mProfile->custom.callgrind.cumSamples);
+                    }
                 } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
                     if (column == col_selfCycles) {
                         return QString::number (mProfile->custom.pose.selfCycles);
@@ -360,6 +368,22 @@ QString CProfileViewItem::getText (int column) const
                     if (column == diff_col_maxMsPerCall) {
                         return mProfile->previous ? formatFloat (mProfile->previous->custom.fnccheck.maxMsPerCall, 3) : QString ("");
                     }
+                } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                    if (column == diff_col_new_selfCycles) {
+                        return QString::number (mProfile->custom.callgrind.selfSamples);
+                    }
+
+                    if (column == diff_col_selfCycles) {
+                        return mProfile->previous ? QString::number (mProfile->previous->custom.callgrind.selfSamples) : QString ("");
+                    }
+
+                    if (column == diff_col_new_cumCycles) {
+                        return QString::number (mProfile->custom.callgrind.cumSamples);
+                    }
+
+                    if (column == diff_col_cumCycles) {
+                        return mProfile->previous ? QString::number (mProfile->previous->custom.callgrind.cumSamples) : QString ("");
+                    }
                 } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
                     if (column == diff_col_new_selfCycles) {
                         return QString::number (mProfile->custom.pose.selfCycles);
@@ -436,6 +460,12 @@ QString CProfileViewItem::key (int column, bool) const
                         s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.minMsPerCall * 100.0));
                     } else if (column == col_maxMsPerCall) {
                         s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.maxMsPerCall * 100.0));
+                    }
+                } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                    if (column == col_selfCycles) {
+                        s.sprintf ("%014ld", mProfile->custom.callgrind.selfSamples);
+                    } else if (column == col_cumCycles) {
+                        s.sprintf ("%014ld", mProfile->custom.callgrind.cumSamples);
                     }
                 } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
                     if (column == col_selfCycles) {
@@ -535,6 +565,18 @@ QString CProfileViewItem::key (int column, bool) const
                             s.sprintf ("%014ld", (long) (mProfile->previous->custom.fnccheck.maxMsPerCall * 100.0));
                         }
                     }
+                } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                    if (column == diff_col_new_selfCycles) {
+                        s.sprintf ("%014ld", mProfile->custom.callgrind.selfSamples);
+                    } else if (column == diff_col_new_cumCycles) {
+                        s.sprintf ("%014ld", mProfile->custom.callgrind.cumSamples);
+                    } else if (mProfile->previous) {
+                        if (column == diff_col_selfCycles) {
+                            s.sprintf ("%014ld", mProfile->previous->custom.callgrind.selfSamples);
+                        } else if (column == diff_col_cumCycles) {
+                            s.sprintf ("%014ld", mProfile->previous->custom.callgrind.cumSamples);
+                        }
+                    }
                 } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
                     if (column == diff_col_new_selfCycles) {
                         s.sprintf ("%014ld", mProfile->custom.pose.selfCycles);
@@ -587,6 +629,8 @@ void CProfileViewItem::paintCell (QPainter * p, const QColor & cg, int column, i
                 (QProfWidget::sLastFileFormat == FORMAT_FNCCHECK &&
                  (column == diff_col_new_minMsPerCall || column == diff_col_new_maxMsPerCall)) ||
                 (QProfWidget::sLastFileFormat == FORMAT_POSE &&
+                 (column == diff_col_new_selfCycles || column == diff_col_new_cumCycles)) ||
+                (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND &&
                  (column == diff_col_new_selfCycles || column == diff_col_new_cumCycles))) {
             solid = true;
         }

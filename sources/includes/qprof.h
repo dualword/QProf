@@ -22,15 +22,13 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __KPROF_H__
-#define __KPROF_H__
+#ifndef __QPROF_H__
+#define __QPROF_H__
 
 #include <QMainWindow>
 
-// class KToggleAction;
 #include <QAction>
 #include <QWidget>
-// class KProfWidget;
 
 class KProfTopLevel : public QMainWindow
 {

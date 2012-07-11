@@ -21,11 +21,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __KPROFCONSTS_H__
-#define __KPROFCONSTS_H__
+#ifndef __QPROFCONSTS_H__
+#define __QPROFCONSTS_H__
 
-#define PROGRAM_NAME "QProfiler v.0.9.1"
-#define PROGRAM_VERSION "<b>v.0.9.1 (5 july 2012)</b>"
+#define PROGRAM_NAME "QProfiler v.0.9.2"
+#define PROGRAM_VERSION "<b>v.0.9.2 (11 july 2012)</b>"
 
 
 #define col_function_t                "Function/Method"
@@ -43,6 +43,10 @@
 // POSE specific columns
 #define col_selfCycles_t              "Self Cycles"
 #define col_cumCycles_t               "Total Cycles"
+// CALLGRIND specific columns
+// #define col_selfCycles_t              "Self Cycles"
+// #define col_cumCycles_t               "Total Cycles"
+
 
 #define diff_col_function_t           "Function/Method"
 #define diff_col_status_t             "Remarks"
@@ -82,7 +86,7 @@
 // Function Check specific columns
 #define col_minMsPerCall    7
 #define col_maxMsPerCall    8
-// POSE specific columns
+// POSE, CALLGRIND specific columns
 #define col_selfCycles      7
 #define col_cumCycles     8
 
@@ -106,7 +110,7 @@
 #define diff_col_new_minMsPerCall 13
 #define diff_col_maxMsPerCall   14
 #define diff_col_new_maxMsPerCall 15
-// POSE specific columns
+// POSE, CALLGIND specific columns
 #define diff_col_selfCycles     12
 #define diff_col_new_selfCycles 13
 #define diff_col_cumCycles      14

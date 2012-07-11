@@ -50,6 +50,8 @@ class CProfileInfo
         QString     object;                 // name of object if this is an object method
         QString     method;                 // method name without class name nor arguments
         QString     arguments;              // function/method arguments
+        QString     fileName;
+        QString     libName;
         QList<CProfileInfo *> called;      // list of functions called by this one
         QList<CProfileInfo *> callers;     // list of functions that this one calls
         CProfileInfo* previous;             // when comparing, points to the previous profile result for this entry
@@ -79,6 +81,12 @@ class CProfileInfo
                 float   minMsPerCall;
                 float   maxMsPerCall;
             } fnccheck;
+
+            // callgrind Emulator
+            struct {
+                long    selfSamples;
+                long    cumSamples;
+            } callgrind;
 
             // Palm OS Emulator
             struct {

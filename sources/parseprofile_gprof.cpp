@@ -4,6 +4,10 @@
     begin                : Tue Jul 9 2002
     copyright            : (C) 2002 by Colin Desmond
     email                : colin.desmond@btopenworld.com
+
+    ported to Qt4        : Eduard Kalinowski
+    email                : eduard_kalinowski@yahoo.de
+
  ***************************************************************************/
 
 /***************************************************************************
@@ -264,11 +268,6 @@ CParseProfile_gprof::CParseProfile_gprof (QTextStream& t, QVector<CProfileInfo>&
                 }
 
                 callGraphBlock.append(*e);
-//                 if (callGraphBlock.count () == callGraphBlock.size ()) {
-//                     callGraphBlock.resize (callGraphBlock.size () + 32);
-//                 }
-//
-//                 callGraphBlock.insert (callGraphBlock.count (), *e);
                 break;
             }
         }
