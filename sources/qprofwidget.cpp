@@ -513,16 +513,15 @@ void QProfWidget::openResultsFile ()
     bgroup->addButton(fmtFNCCHECK);
     hlayout->addWidget(fmtFNCCHECK);
 
+    QRadioButton *fmtCALLG = new QRadioButton (tr ("Callgrind"));
+    bgroup->addButton(fmtCALLG);
+    hlayout->addWidget(fmtCALLG);
+
     QRadioButton *fmtPOSE = new QRadioButton (tr ("Palm OS Emulator"));
     fmtPOSE->setDisabled(true);
     bgroup->addButton(fmtPOSE);
     hlayout->addWidget(fmtPOSE);
 
-
-    QRadioButton *fmtCALLG = new QRadioButton (tr ("Callgrind"));
-    fmtCALLG->setDisabled(true);
-    bgroup->addButton(fmtCALLG);
-    hlayout->addWidget(fmtCALLG);
 
     // reset format button to last used format
     if (sLastFileFormat == FORMAT_GPROF && !fmtGPROF->isChecked()) {

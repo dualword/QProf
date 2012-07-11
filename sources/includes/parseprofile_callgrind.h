@@ -79,6 +79,7 @@ private:
     bool parse_position_spec();
     bool parse_empty();
     bool parse_comment();
+    long long extractId(const QString& ln);
     bool parse_key(const QString& key );
     bool parse_keys(const QStringList& keyList);//??
     CProfileInfo* make_function(void);
@@ -87,9 +88,9 @@ private:
 //         CProfileInfo* get_call_entries();
 
 private:
-    QHash<QString, QString> _position_table_map;
-    QHash<QString, QString> _position_map;
-    QHash<QString, QString> _keys;
+//     QHash<QString, QString> _position_table_map;
+//     QHash<QString, QString> _position_map;
+//     QHash<QString, QString> _keys;
     CProfileInfo **indexToProfile;
     QRegExp _call_re;
     QString cost_events;
@@ -98,17 +99,22 @@ private:
     QString cost_positions;
     QRegExp _cost_re;
     QRegExp _key_re;
-    QString  libName;
-    QString  fileName;
-    QString  function;
+    
+    int  actualFileId;
+    int  actualLibId;
+    int  actualFuncId;
+    
+    QHash<int, QString> libName;
+    QHash<int, QString> fileName;
+    QHash<int, QString> function;
     // current position
     lineType nextLineType;
-//         PositionSpec currentPos;
-    QString  calledLibName;
-    QString  calledFileName;
-    QString  calledFunction;
-    QString  currentJumpToFile;
-    QString  currentJumpToFunction;
+/*
+    QHash<int, QString> calledLibName;
+    QHash<int, QString> calledFileName;
+    QHash<int, QString> calledFunction;*/
+    QHash<int, QString> currentJumpToFile;
+    QHash<int, QString> currentJumpToFunction;
     bool hasLineInfo;
     bool hasAddrInfo;
     long long int summary;
