@@ -1,9 +1,9 @@
 /***************************************************************************
                           parseprofile_pose.cpp  -  description
                              -------------------
-    begin                : Wed Jul 10 2002
-    copyright            : (C) 2002 by Colin Desmond
-    email                : colin.desmond@btopenworld.com
+    begin                : Jul 05 2012
+    copyright            : (C) 2012 by Eduard Kalinowski
+    email                : eduard_kalinowski@yahoo.de
  ***************************************************************************/
 
 /***************************************************************************
@@ -51,35 +51,9 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
     // of indexes -> CProfileInfo*, and a list of call maps index -> parent index
     QHash<QString, CProfileInfo*> functions;// (257);
 
-    SCallgrindCallGraph* callGraph = (SCallgrindCallGraph *) malloc (256 * sizeof (SCallgrindCallGraph));
-
 
     _call_re = QRegExp("^calls=\\s*(\\d+)\\s+((\\d+|\\+\\d+|-\\d+|\\*)\\s+)+$");
     _position_re = QRegExp("^(?P<position>[cj]?(?:ob|fl|fi|fe|fn))=\\s*(?:\((?P<id>\\d+)\\))?(?:\\s*(?P<name>.+))?");
-
-//     _position_table_map["ob"] = "ob";
-//     _position_table_map["fl"] = "fl";
-//     _position_table_map["fi"] = "fl";
-//     _position_table_map["fe"] = "fl";
-//     _position_table_map["fn"] = "fn";
-//     _position_table_map["cob"] = "ob";
-//     _position_table_map["cfl"] = "fl";
-//     _position_table_map["cfi"] = "fl";
-//     _position_table_map["cfe"] = "fl";
-//     _position_table_map["cfn"] = "fn";
-//     _position_table_map["jfi"] = "fl";
-// 
-//     _position_map["ob"] = "ob";
-//     _position_map["fl"] = "fl";
-//     _position_map["fi"] = "fl";
-//     _position_map["fe"] = "fl";
-//     _position_map["fn"] = "fn";
-//     _position_map["cob"] = "cob";
-//     _position_map["cfl"] = "cfl";
-//     _position_map["cfi"] = "cfl";
-//     _position_map["cfe"] = "cfl";
-//     _position_map["cfn"] = "cfn";
-//     _position_map["jfi"] = "jfi";
 
 //     LineParser.__init__(self, infile);
 
@@ -115,15 +89,15 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
 
 }
 
-long long CParseProfile_callgrind::extractId(const QString& ln){
+long long CParseProfile_callgrind::extractId(const QString& ln) {
     int posId;
     long long id;
     posId = ln.indexOf(QRegExp("\((\\d+)\)"));
-    if (posId == -1){
+    if (posId == -1) {
         qDebug() << "id is wrong" << ln;
         return -1;
     }
-    else{
+    else {
         QString idStr = ln.mid(posId, ln.indexOf(")")-posId);
         id = idStr.toLongLong();
 //         qDebug() << line << id;
@@ -167,14 +141,14 @@ bool CParseProfile_callgrind::parse_cost_lines()
 
             // go through after big switch
         } else {
-
             switch(c) {
             case 'f':
                 // fl=, fi=, fe=
                 if (line.startsWith("fl=") || line.startsWith("fi=") || line.startsWith("fe=")) {
                     int pos = line.indexOf(" ");
                     actualFileId = extractId(line);
-                    if (pos > 0){
+                    actualCalledFileId = actualFileId;
+                    if (pos > 0) {
                         if (fileName.find(actualFileId) == fileName.end()) // not exististing
                             fileName.insert(actualFileId, line.mid( pos + 1));
                     }
@@ -187,11 +161,11 @@ bool CParseProfile_callgrind::parse_cost_lines()
                     int pos = line.indexOf(" ");
                     actualFuncId = extractId(line);
 
-                    if (pos > 0){
+                    if (pos > 0) {
                         if (function.find(actualFuncId) == function.end()) // not exististing
                             function.insert(actualFuncId, line.mid( pos + 1));
                     }
-                    
+
                     func = make_function();
 
                     if (func == NULL) {
@@ -223,10 +197,10 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 // cob=
                 if (line.startsWith("cob=")) {
                     int pos = line.indexOf(" ");
-                    actualLibId = extractId(line);
-                    if (pos > 0){
-                        if (libName.find(actualLibId) == libName.end()) // not exististing
-                            libName.insert(actualLibId, line.mid( pos + 1));
+                    actualCalledLibId = extractId(line);
+                    if (pos > 0) {
+                        if (libName.find(actualCalledLibId) == libName.end()) // not exististing
+                            libName.insert(actualCalledLibId, line.mid( pos + 1));
                     }
                     continue;
                 }
@@ -234,10 +208,10 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 // cfi= / cfl=
                 if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
                     int pos = line.indexOf(" ");
-                    actualFileId = extractId(line);
-                    if (pos > 0){
-                        if (fileName.find(actualFileId) == fileName.end()) // not exististing
-                            fileName.insert(actualFileId, line.mid( pos + 1));
+                    actualCalledFileId = extractId(line);
+                    if (pos > 0) {
+                        if (fileName.find(actualCalledFileId) == fileName.end()) // not exististing
+                            fileName.insert(actualCalledFileId, line.mid( pos + 1));
                     }
                     continue;
                 }
@@ -245,14 +219,15 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 // cfn=
                 if (line.startsWith("cfn=")) {
                     int pos = line.indexOf(" ");
-                    actualFuncId = extractId(line);
+                    actualCalledFuncId = extractId(line);
 
-                    if (pos > 0){
-                        if (function.find(actualFuncId) == function.end()) // not exististing
-                            function.insert(actualFuncId, line.mid( pos + 1));
+                    if (pos > 0) {
+                        if (function.find(actualCalledFuncId) == function.end()) // not exististing
+                            function.insert(actualCalledFuncId, line.mid( pos + 1));
                     }
-                    
-                    func = make_function();//make_CalledFunction();
+
+                    func = make_CalledFunction();
+
                     continue;
                 }
 
@@ -262,8 +237,11 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //                     line.stripUInt64(currentCallCount);
                     if (func != NULL) {
                         int pos = line.indexOf("=");
-                        if (pos > 0)
-                            func->calls = line.mid(pos + 1, line.indexOf((" "))-pos).toULongLong();
+                        if (pos > 0) {
+                            QString num = line.mid(pos + 1, line.indexOf((" "))-pos-1);
+//                             qDebug() << "calls" << num;
+                            func->calls = num.toULongLong();
+                        }
 //                         qDebug() << line << func->calls;
                     }
 
@@ -353,7 +331,8 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 if (line.startsWith("ob=")) {
                     int pos = line.indexOf(" ");
                     actualLibId = extractId(line);
-                    if (pos > 0){
+                    actualCalledLibId = actualLibId;
+                    if (pos > 0) {
                         if (libName.find(actualLibId) == libName.end()) // not exististing
                             libName.insert(actualLibId, line.mid( pos + 1));
                     }
@@ -533,7 +512,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
             int pos = line.lastIndexOf(QRegExp("(\\d+)"));
             if (pos > 0)
                 num = line .mid(pos);
-            
+
             sampl = num.toLongLong(&io);
             if (io == false) {
                 qDebug() << QString("Invalid line '%1'").arg(line);
@@ -553,7 +532,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
             int pos = line.lastIndexOf(QRegExp("(\\d+)"));
             if (pos > 0 )
                 num = line .mid(pos);
-            
+
             sampl = num.toLongLong(&io);
             if (io == false) {
                 qDebug() << QString("Invalid line '%1'").arg(line);
@@ -567,67 +546,6 @@ bool CParseProfile_callgrind::parse_cost_lines()
 
     }
 
-
-
-
-#if 0
-
-
-    if (calls == 0) {
-//             # Unlike other aspects, call object (cob) == relative not to the
-//             # last call object, but to the caller"s object (ob), so update it
-//             # when processing a functions cost line
-        positions["cob"] = positions["ob"];
-    }
-
-    QStringList values = line.split(" ", QString::SkipEmptyParts);
-//     assert (values.count() <= num_positions + num_events);
-
-//     positions = values[0 : num_positions];
-    events[0] = values.last().toInt(); //values[num_positions : ];
-//     events += ["0"] * (num_events - len(events));
-    int position = 0;
-    bool h;
-    int i = 0;
-
-    for (QStringList::iterator iv = values.begin(); iv < values.end(); ++iv, ++i) {
-        if ((*iv).at(0) == '*') {
-//             position = (*(iv +1)).toInt();
-            events = (*(iv + 1)).toInt();
-        } else if ( (*iv).at(0) == '-' || (*iv).at(0) == '+') {
-//             position = (*(iv +1)).toInt() + (*iv).toInt();
-            events = (*(iv + 1)).toInt();
-        } else if ((*iv).startsWith("0x")) {
-            position = (*iv).toInt(&h, 16);
-            events = (*(iv + 1)).toInt();
-        } else {
-            position = (*iv).toInt();
-        }
-
-        last_positions[i] = position;
-    }
-
-//     events = map(float, events);
-
-    if (calls == 0) {
-        func->custom.callgrind.selfSamples  += events[0];
-//         profile[SAMPLES] += events[0];
-    } else {
-        CProfileInfo* callee;
-        callee = get_call_entries();
-
-        if (callee != NULL) {
-            callee->called += calls;
-        } else { // if not exists
-            CProfileInfo* call;
-            call = Call(callee.id);
-            call->calls = calls;
-            call->custom.callgrind.selfSamples = events[0];
-            func.add_call(call);
-        }
-    }
-
-#endif
     return true;
 }
 
@@ -642,17 +560,27 @@ CProfileInfo* CParseProfile_callgrind::make_function()
 
 // existiert?
     for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).method == function[actualFuncId]) break;
+        if (workCProfile->at(num).name == function[actualFuncId]) break;
 //         num = workCProfile->indexOf(function);
     }
 
+// qDebug() << num << actualFuncId;
+
     if ( num >= 0 && num < workCProfile->count()) {
-        *p = workCProfile->at(num);
+        p = (CProfileInfo*)&workCProfile->at(num);
         return p;
     }
 
+//     processCallGraphBlock (callGraphBlock, *workCProfile);
+
     p = new CProfileInfo;// Function(id, name);
     p->fileName = fileName[actualFileId];
+
+//     SCallGraphEntry *e = new SCallGraphEntry;
+//
+//     e->line = 0;
+//     e->primary = true;
+//     e->recursive = false;
 
     if (libName[actualLibId].length() > 0) {
         p->libName = libName[actualLibId];
@@ -665,15 +593,40 @@ CProfileInfo* CParseProfile_callgrind::make_function()
         p->method = function[actualFuncId].mid (pos + 2);
     }
 
-   
     p->calls = 0;
     p->custom.callgrind.selfSamples = 0;
     p->name = function[actualFuncId];
 
     qDebug() << p->libName << p->fileName << p->name;
-     
+
     p->called.clear();
     workCProfile->append(*p);
+
+//-----------------
+
+//     // gather other values (we have to do some guessing to get them right)
+//     while (field < fields.count ()) {
+//         if (countRegExp.indexIn (fields[field], 0) == 0) {
+//             e->recursive = fields[field].indexOf ('+') != -1;
+//         } else if (floatRegExp.indexIn (fields[field], 0) == -1) {
+//             e->name = fields[field];
+//         }
+//
+//         field++;
+//     }
+
+    // if we got a call graph block without a primary function name,
+    // drop it completely.
+//     if (e->name == NULL || e->name.length() == 0) {
+//         delete e;
+// //         break;
+//     }
+    /*
+        if (e->primary == true && count.indexOf ('+') != -1) {
+            e->recursive = true;
+        }*/
+
+//     callGraphBlock.append(*e);
 
     return p;
 }
@@ -683,39 +636,69 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
     //FIXME: module and fileName are not being tracked reliably
     //id = "|".join((module, fileName, name))
     CProfileInfo *p;
+    CProfileInfo *f;
     long int num;
     int pos;
 
 // existiert?
     for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).method == function[actualFuncId]) break;
+        if (workCProfile->at(num).name == function[actualCalledFuncId]) break;
 //         num = workCProfile->indexOf(function);
     }
 
+//     qDebug() << "called:" << num << actualCalledFuncId << function[actualCalledFuncId];
+
     if ( num >= 0 && num < workCProfile->count()) {
-        *p = workCProfile->at(num);
+        p = (CProfileInfo*)&workCProfile->at(num);
         return p;
     }
 
-    p = new CProfileInfo;// Function(id, name);
-    p->fileName = fileName[actualFileId];
+//     processCallGraphBlock (callGraphBlock, *workCProfile);
 
-    if (libName[actualLibId].length() > 0) {
-        p->libName = libName[actualLibId];
+    p = new CProfileInfo;// Function(id, name);
+    p->fileName = fileName[actualCalledFileId];
+
+//     SCallGraphEntry *e = new SCallGraphEntry;
+//
+//     e->line = 0;
+//     e->primary = false;
+//     e->recursive = false;
+
+    if (libName[actualCalledLibId].length() > 0) {
+        p->libName = libName[actualCalledLibId];
     }
 
-    pos = function[actualFuncId].indexOf("::");
+    pos = function[actualCalledFuncId].indexOf("::");
 
     if ( pos > 0) {
-        p->object = function[actualFuncId].left(pos);
-        p->method = function[actualFuncId].mid (pos + 2);
+        p->object = function[actualCalledFuncId].left(pos);
+        p->method = function[actualCalledFuncId].mid (pos + 2);
     }
 
     p->calls = 0;
     p->custom.callgrind.selfSamples = 0;
-    p->name = function[actualFuncId];
+    p->name = function[actualCalledFuncId];
 
     p->called.clear();
+
+    // was called from:
+    for (num = 0; num < workCProfile->count(); ++num) {
+        if (workCProfile->at(num).method == function[actualFuncId]) break;
+//         num = workCProfile->indexOf(function);
+    }
+
+    f = NULL;
+
+    if ( num >= 0 && num < workCProfile->count()) {
+        *f = workCProfile->at(num);
+//         return p;
+    }
+
+    if (f != NULL) {
+        p->callers.append(f);
+        f->called.append(p);
+    }
+
     workCProfile->append(*p);
 
     return p;

@@ -88,9 +88,6 @@ private:
 //         CProfileInfo* get_call_entries();
 
 private:
-//     QHash<QString, QString> _position_table_map;
-//     QHash<QString, QString> _position_map;
-//     QHash<QString, QString> _keys;
     CProfileInfo **indexToProfile;
     QRegExp _call_re;
     QString cost_events;
@@ -99,51 +96,33 @@ private:
     QString cost_positions;
     QRegExp _cost_re;
     QRegExp _key_re;
-    
+
     int  actualFileId;
     int  actualLibId;
     int  actualFuncId;
-    
-    QHash<int, QString> libName;
-    QHash<int, QString> fileName;
-    QHash<int, QString> function;
+    int  actualCalledFileId;
+    int  actualCalledLibId;
+    int  actualCalledFuncId;
+
+    QHash<int, QString> libName;   // id for lib name
+    QHash<int, QString> fileName;  // id for file name
+    QHash<int, QString> function;  // id for function name
     // current position
     lineType nextLineType;
-/*
-    QHash<int, QString> calledLibName;
-    QHash<int, QString> calledFileName;
-    QHash<int, QString> calledFunction;*/
+
     QHash<int, QString> currentJumpToFile;
     QHash<int, QString> currentJumpToFunction;
     bool hasLineInfo;
     bool hasAddrInfo;
     long long int summary;
-//         int     last_positions[8];
-//         int     events[8];
+
     QTextStream *strm;
     QString line;
     QVector<CProfileInfo>* workCProfile;
 
-
-//         QStringList _detail_keys;
-//     position_ids;
-//     positions;
-//
-// //         # Numeric positions
-//     int num_positions;
-//     cost_positions;
-//     last_positions;
-
-//         # Events
     long int num_events;
 //     cost_events;
-
-    typedef struct {                    // structure holding call-graph data for PalmOS Emulator results
-        int     index;
-        int     parent;
-    } SCallgrindCallGraph;
-
-    QVector<SCallgrindCallGraph> callGraphBlock;
+    QVector<SCallGraphEntry> callGraphBlock;
 
 };
 

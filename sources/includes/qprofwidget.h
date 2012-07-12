@@ -163,11 +163,12 @@ protected slots:
 private:
     void initColFields();
     void createToolBars();
-    void openFile (const QString &filename, short format, bool compare = false);
+    int  fileDetection(const QString &fname);
+    void openFile (const QString &filename, bool compare = false);
     void prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler);
     void postProcessProfile (bool compare);
     void prepareHtmlPart(QTextBrowser* part);
-    bool parseArguments(const QStringList &args, QString& fileName, short& prof);
+    bool parseArguments(const QStringList &args, QString& fileName);
     void addRecentFile (const QUrl&);
     void openURLRequestDelayed( const QUrl &url);
     void fillFlatProfileList ();

@@ -225,6 +225,44 @@ void QProfWidget::about()
 }
 
 
+int QProfWidget::fileDetection(const QString &fname)
+{
+    QFile file;
+    QString line;
+    int num;
+    int ret;
+
+    file.setFileName(fname);
+    file.open(QIODevice::ReadWrite);
+
+    // directly from gprof and the gmon.out file
+    QFileInfo finfo (fname);
+    if (finfo.isExecutable ())
+        return -1;
+
+    ret = -1;
+    QTextStream t (&file);
+
+    num = 0;
+    while (!t.atEnd()) {
+        line = t.readLine();
+
+        if (line.indexOf("callgrind")>=0)
+            return FORMAT_CALLGRIND;
+
+        if (line.indexOf("Flat profile") >=0)
+            return FORMAT_GPROF;
+        num++;
+        if (num > 10)
+            break;
+    }
+
+    file.close();
+
+    return ret;
+}
+
+
 void QProfWidget::toggleTemplateAbbrev (bool stste)
 {
     mAbbrevTemplates = stste;// mAbbrevTemplates ? false : true;
@@ -452,6 +490,8 @@ void QProfWidget::openRecentFile (QAction* act)
     QString filename = url->path ();
     QString protocol = url->scheme ();
 
+    openFile (filename, false);
+#if 0
     if (protocol == "file-gprof") {
         openFile (filename, FORMAT_GPROF, false);
     } else if (protocol == "file-fnccheck") {
@@ -464,6 +504,7 @@ void QProfWidget::openRecentFile (QAction* act)
         QMessageBox::warning (this, tr ("Unknown format selected"), tr ("Please select existing format"));
 //         openFile (filename, (QProfWidget::short) - 1);
     }
+#endif
 }
 
 
@@ -478,7 +519,7 @@ void QProfWidget::compareFile ()
         return;
     }
 
-    openFile (f, sLastFileFormat, true);
+    openFile (f, true);
 }
 
 
@@ -491,7 +532,7 @@ void QProfWidget::openResultsFile ()
     QFileDialog fd (this, tr ("Select a profiling results file"), mCurDir.absolutePath());
     fd.setOption(QFileDialog::DontUseNativeDialog, true);
 
-
+#if 0
     QGridLayout* mainLayout = dynamic_cast<QGridLayout*>(fd.layout());
     assert(mainLayout->columnCount() == 3);
     assert(mainLayout->rowCount()    == 4);
@@ -567,6 +608,7 @@ void QProfWidget::openResultsFile ()
     QLayoutItem* tmp2 = mainLayout->itemAtPosition(mainLayout->rowCount() - 1, 1);
     assert(tmp);
     assert(tmp2);
+#endif
 
     fd.exec();
 
@@ -577,6 +619,7 @@ void QProfWidget::openResultsFile ()
     QString filename = fd.selectedFiles().at(0);//.selectedFile();
 
     if (!filename.isEmpty()) {
+#if 0
         if (fmtGPROF->isChecked () == true)
             sLastFileFormat = FORMAT_GPROF;
         else if (fmtFNCCHECK->isChecked () == true)
@@ -600,9 +643,9 @@ void QProfWidget::openResultsFile ()
             qDebug("Suppose Fileformat is \"Callgrind\"");
             break;
         }
-
+#endif
         //open the file
-        openFile (filename, sLastFileFormat, false);
+        openFile (filename, false);
     }
 }
 
@@ -616,19 +659,19 @@ void QProfWidget::openCommandLineFiles ()
     }
 
     QString fileName = "";
-    short prof = FORMAT_GPROF;
-    bool argsToUse = parseArguments(args, fileName, prof);
+//     short prof = FORMAT_GPROF;
+    bool argsToUse = parseArguments(args, fileName);
     args.clear();
 
     //If the file name has been set in the command line arguments
     //then open the file with the chosen profiler.
     if (argsToUse && (fileName != "")) {
-        openFile(fileName, prof, false);
+        openFile(fileName, false);
     }
 }
 
 
-bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, short& prof)
+bool QProfWidget::parseArguments(const QStringList & args, QString& fileName)
 {
     bool success = false;
 
@@ -639,7 +682,7 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
             fileName = args.at(++i);
             success = true;
         }
-
+#if 0
         if(arg == "-p") {
             QString profiler = args.at(++i);
 
@@ -661,6 +704,7 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName, sh
                 success = false;
             }
         }
+#endif
     }
 
     return success;
@@ -690,13 +734,18 @@ void QProfWidget::createToolBars()
 }
 
 
-void QProfWidget::openFile (const QString &filename, short format, bool compare)
+void QProfWidget::openFile (const QString &filename, bool compare)
 {
     bool isExec = false;
+    short format;
 
     if (filename.isEmpty ()) {
         return;
     }
+
+    sLastFileFormat = fileDetection(filename);
+
+    format = sLastFileFormat;
 
     // if the file is an executable file, generate the profiling information
     // directly from gprof and the gmon.out file
