@@ -252,6 +252,10 @@ int QProfWidget::fileDetection(const QString &fname)
 
         if (line.indexOf("Flat profile") >=0)
             return FORMAT_GPROF;
+
+        if ((line.indexOf("local") >=0) && (line.indexOf("total") >=0))
+            return FORMAT_FNCCHECK;
+        
         num++;
         if (num > 10)
             break;
