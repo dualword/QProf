@@ -24,8 +24,8 @@
 #ifndef __QPROFCONSTS_H__
 #define __QPROFCONSTS_H__
 
-#define PROGRAM_NAME "QProfiler v.0.9.2"
-#define PROGRAM_VERSION "<b>v.0.9.2 (11 july 2012)</b>"
+#define PROGRAM_NAME "QProfiler v.0.9.4"
+#define PROGRAM_VERSION "<b>v.0.9.4 (13 july 2012)</b>"
 
 
 #define col_function_t                "Function/Method"

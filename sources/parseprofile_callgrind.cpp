@@ -52,15 +52,15 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
     QHash<QString, CProfileInfo*> functions;// (257);
 
 
-    _call_re = QRegExp("^calls=\\s*(\\d+)\\s+((\\d+|\\+\\d+|-\\d+|\\*)\\s+)+$");
-    _position_re = QRegExp("^(?P<position>[cj]?(?:ob|fl|fi|fe|fn))=\\s*(?:\((?P<id>\\d+)\\))?(?:\\s*(?P<name>.+))?");
+//     _call_re = QRegExp("^calls=\\s*(\\d+)\\s+((\\d+|\\+\\d+|-\\d+|\\*)\\s+)+$");
+//     _position_re = QRegExp("^(?P<position>[cj]?(?:ob|fl|fi|fe|fn))=\\s*(?:\((?P<id>\\d+)\\))?(?:\\s*(?P<name>.+))?");
 
 //     LineParser.__init__(self, infile);
 
-    QString __subpos = QString("(0x[0-9a-fA-F]+|\\d+|\\+\\d+|-\\d+|\\*)");
-
-    _cost_re = QRegExp("^" + __subpos + "( +" + __subpos + ")*" + "( +\\d+)*" + "$");
-    _key_re = QRegExp("^(\\w+):");
+//     QString __subpos = QString("(0x[0-9a-fA-F]+|\\d+|\\+\\d+|-\\d+|\\*)");
+//
+//     _cost_re = QRegExp("^" + __subpos + "( +" + __subpos + ")*" + "( +\\d+)*" + "$");
+//     _key_re = QRegExp("^(\\w+):");
 
 //         # Textual positions
 //     position_ids = {};
@@ -148,6 +148,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
                     int pos = line.indexOf(" ");
                     actualFileId = extractId(line);
                     actualCalledFileId = actualFileId;
+
                     if (pos > 0) {
                         if (fileName.find(actualFileId) == fileName.end()) // not exististing
                             fileName.insert(actualFileId, line.mid( pos + 1));
@@ -220,6 +221,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 if (line.startsWith("cfn=")) {
                     int pos = line.indexOf(" ");
                     actualCalledFuncId = extractId(line);
+//                    if (actualCalledFuncId== 1760)qDebug() << line << pos;
 
                     if (pos > 0) {
                         if (function.find(actualCalledFuncId) == function.end()) // not exististing
@@ -236,12 +238,20 @@ bool CParseProfile_callgrind::parse_cost_lines()
                     // ignore long lines...
 //                     line.stripUInt64(currentCallCount);
                     if (func != NULL) {
+                        QString num;
                         int pos = line.indexOf("=");
                         if (pos > 0) {
-                            QString num = line.mid(pos + 1, line.indexOf((" "))-pos-1);
-//                             qDebug() << "calls" << num;
-                            func->calls = num.toULongLong();
+                            int posSpace =line.indexOf(" ", pos + 1);
+                            if (posSpace > 1)
+                                num = line.mid(pos + 1, posSpace-pos-1);
+                            else
+                                num = line.mid(pos + 1);
+// if (actualCalledFuncId ==1760) qDebug() << "calls" << num;
+                            func->calls += num.toULongLong();
+
                         }
+
+
 //                         qDebug() << line << func->calls;
                     }
 
@@ -571,6 +581,7 @@ CProfileInfo* CParseProfile_callgrind::make_function()
         return p;
     }
 
+    if (actualFuncId== 1760) qDebug() << line;
 //     processCallGraphBlock (callGraphBlock, *workCProfile);
 
     p = new CProfileInfo;// Function(id, name);
@@ -597,7 +608,7 @@ CProfileInfo* CParseProfile_callgrind::make_function()
     p->custom.callgrind.selfSamples = 0;
     p->name = function[actualFuncId];
 
-    qDebug() << p->libName << p->fileName << p->name;
+//     qDebug() << p->libName << p->fileName << p->name;
 
     p->called.clear();
     workCProfile->append(*p);
@@ -646,6 +657,7 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
 //         num = workCProfile->indexOf(function);
     }
 
+    if (actualCalledFuncId== 1760)qDebug() << line;
 //     qDebug() << "called:" << num << actualCalledFuncId << function[actualCalledFuncId];
 
     if ( num >= 0 && num < workCProfile->count()) {
@@ -683,19 +695,16 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
 
     // was called from:
     for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).method == function[actualFuncId]) break;
+        if (workCProfile->at(num).name == function[actualFuncId]) break;
 //         num = workCProfile->indexOf(function);
     }
 
-    f = NULL;
+//     f = NULL;
 
     if ( num >= 0 && num < workCProfile->count()) {
-        *f = workCProfile->at(num);
-//         return p;
-    }
+        f = (CProfileInfo*)&workCProfile->at(num);
 
-    if (f != NULL) {
-        p->callers.append(f);
+//         p->callers.append(f);
         f->called.append(p);
     }
 

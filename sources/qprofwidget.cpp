@@ -255,7 +255,7 @@ int QProfWidget::fileDetection(const QString &fname)
 
         if ((line.indexOf("local") >=0) && (line.indexOf("total") >=0))
             return FORMAT_FNCCHECK;
-        
+
         num++;
         if (num > 10)
             break;
@@ -856,7 +856,7 @@ void QProfWidget::openFile (const QString &filename, bool compare)
 
         if (format == FORMAT_GPROF) {
             profile = new CParseProfile_gprof(t, mProfile);
-        } else if (format == FORMAT_CALLGRIND){
+        } else if (format == FORMAT_CALLGRIND) {
             profile = new CParseProfile_callgrind(t, mProfile);
         } else {
             profile = new CParseProfile_fnccheck(t, mProfile);

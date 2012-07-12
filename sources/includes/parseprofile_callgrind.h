@@ -89,13 +89,13 @@ private:
 
 private:
     CProfileInfo **indexToProfile;
-    QRegExp _call_re;
+//     QRegExp _call_re;
     QString cost_events;
-    QRegExp _position_re;
+//     QRegExp _position_re;
     int num_positions;
     QString cost_positions;
-    QRegExp _cost_re;
-    QRegExp _key_re;
+//     QRegExp _cost_re;
+//     QRegExp _key_re;
 
     int  actualFileId;
     int  actualLibId;
