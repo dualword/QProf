@@ -66,7 +66,6 @@ void CProfileInfo::dumpHtml(const QString& tempDir)
 
     dumpFile->open(QIODevice::ReadWrite);
 
-
     QTextStream stream(dumpFile);//dumpText, QIODevice::WriteOnly);
 
     //Start the HTML code

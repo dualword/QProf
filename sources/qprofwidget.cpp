@@ -228,33 +228,55 @@ void QProfWidget::about()
 int QProfWidget::fileDetection(const QString &fname)
 {
     QFile file;
-    QString line;
+    char ba[512];
     int num;
     int ret;
 
     file.setFileName(fname);
-    file.open(QIODevice::ReadWrite);
+    ret = -1;
+
+    if (file.open(QIODevice::ReadOnly) == false)
+        return ret;
+
+    QDataStream in(&file);    // read the data serialized from the file
+    in.readRawData(ba, 512);
+    file.close();
+
+    for (int i=0; i<128; i++) {
+        if ( ba[i] == 0x0 || ba[i] > 0x7f) {
+            return -2;
+        }
+    }
+
+    if (file.open(QIODevice::ReadWrite) == false)
+        return ret;
 
     // directly from gprof and the gmon.out file
     QFileInfo finfo (fname);
     if (finfo.isExecutable ())
-        return -1;
+        return ret;
 
-    ret = -1;
+    QString line;
     QTextStream t (&file);
 
     num = 0;
     while (!t.atEnd()) {
-        line = t.readLine();
+        line = t.readLine(256);
 
-        if (line.indexOf("callgrind")>=0)
-            return FORMAT_CALLGRIND;
+        if (line.indexOf("callgrind")>=0) {
+            ret = FORMAT_CALLGRIND;
+            break;
+        }
 
-        if (line.indexOf("Flat profile") >=0)
-            return FORMAT_GPROF;
+        if (line.indexOf("Flat profile") >=0) {
+            ret = FORMAT_GPROF;
+            break;
+        }
 
-        if ((line.indexOf("local") >=0) && (line.indexOf("total") >=0))
-            return FORMAT_FNCCHECK;
+        if ((line.indexOf("local") >=0) && (line.indexOf("total") >=0)) {
+            ret = FORMAT_FNCCHECK;
+            break;
+        }
 
         num++;
         if (num > 10)
@@ -495,20 +517,6 @@ void QProfWidget::openRecentFile (QAction* act)
     QString protocol = url->scheme ();
 
     openFile (filename, false);
-#if 0
-    if (protocol == "file-gprof") {
-        openFile (filename, FORMAT_GPROF, false);
-    } else if (protocol == "file-fnccheck") {
-        openFile (filename, FORMAT_FNCCHECK, false);
-    } else if (protocol == "file-pose") {
-        openFile (filename, FORMAT_POSE, false);
-    } else if (protocol == "file-callgrind") {
-        openFile (filename, FORMAT_CALLGRIND, false);
-    } else {
-        QMessageBox::warning (this, tr ("Unknown format selected"), tr ("Please select existing format"));
-//         openFile (filename, (QProfWidget::short) - 1);
-    }
-#endif
 }
 
 
@@ -536,84 +544,6 @@ void QProfWidget::openResultsFile ()
     QFileDialog fd (this, tr ("Select a profiling results file"), mCurDir.absolutePath());
     fd.setOption(QFileDialog::DontUseNativeDialog, true);
 
-#if 0
-    QGridLayout* mainLayout = dynamic_cast<QGridLayout*>(fd.layout());
-    assert(mainLayout->columnCount() == 3);
-    assert(mainLayout->rowCount()    == 4);
-
-    QWidget*     container      = new QWidget();
-    QHBoxLayout* hlayout        = new QHBoxLayout();
-    QLabel*      txtLabel = new QLabel("Text File Format:");
-
-    container->setLayout(hlayout);
-    hlayout->setAlignment(Qt::AlignLeft);
-
-    QButtonGroup *bgroup = new QButtonGroup (&fd);
-    bgroup->setExclusive(true);// setRadioButtonExclusive (true);
-    QRadioButton *fmtGPROF = new QRadioButton (tr ("GNU gprof  "));
-    bgroup->addButton(fmtGPROF);
-    hlayout->addWidget(fmtGPROF);
-
-    QRadioButton *fmtFNCCHECK = new QRadioButton (tr ("Function Check  "));
-    bgroup->addButton(fmtFNCCHECK);
-    hlayout->addWidget(fmtFNCCHECK);
-
-    QRadioButton *fmtCALLG = new QRadioButton (tr ("Callgrind"));
-    bgroup->addButton(fmtCALLG);
-    hlayout->addWidget(fmtCALLG);
-
-    QRadioButton *fmtPOSE = new QRadioButton (tr ("Palm OS Emulator"));
-    fmtPOSE->setDisabled(true);
-    bgroup->addButton(fmtPOSE);
-    hlayout->addWidget(fmtPOSE);
-
-
-    // reset format button to last used format
-    if (sLastFileFormat == FORMAT_GPROF && !fmtGPROF->isChecked()) {
-        fmtGPROF->toggle ();
-    } else if (sLastFileFormat == FORMAT_FNCCHECK && !fmtFNCCHECK->isChecked ()) {
-        fmtFNCCHECK->toggle ();
-    } else if (!fmtCALLG->isChecked ()) {
-        fmtCALLG->toggle ();
-    } else if (!fmtCALLG->isChecked ()) {
-        fmtCALLG->toggle ();
-    } else if (!fmtPOSE->isChecked ()) {
-        fmtPOSE->toggle ();
-    }
-
-    hlayout->setContentsMargins(0, 0, 0, 0); // Removes unwanted spacing
-
-    // Shifting relevant child widgets one row down.
-    int rowCount = mainLayout->rowCount();
-    QLayoutItem* x00 = mainLayout->itemAtPosition(mainLayout->rowCount() - 2, 0);
-    QLayoutItem* x10 = mainLayout->itemAtPosition(mainLayout->rowCount() - 1, 0);
-    QLayoutItem* x01 = mainLayout->itemAtPosition(mainLayout->rowCount() - 2, 1);
-    QLayoutItem* x11 = mainLayout->itemAtPosition(mainLayout->rowCount() - 1, 1);
-    QLayoutItem* x02 = mainLayout->itemAtPosition(mainLayout->rowCount() - 1, 2);
-    assert(x00);
-    assert(x01);
-    assert(x10);
-    assert(x11);
-    assert(x02);
-
-    mainLayout->addWidget(x00->widget(), rowCount - 1, 0, 1, 1);
-    mainLayout->addWidget(x10->widget(), rowCount,   0, 1, 1);
-    mainLayout->addWidget(x01->widget(), rowCount - 1, 1, 1, 1);
-    mainLayout->addWidget(x11->widget(), rowCount,   1, 1, 1);
-    mainLayout->addWidget(x02->widget(), rowCount - 1, 2, 2, 1);
-
-    // Adding the widgets in the now empty row.
-    rowCount        = mainLayout->rowCount();
-    mainLayout->addWidget(txtLabel, rowCount - 3, 0, 1, 1 );
-    mainLayout->addWidget(container,      rowCount - 3, 1, 1, 1);
-
-    // Setting the proper tab-order
-    QLayoutItem* tmp  = mainLayout->itemAtPosition(mainLayout->rowCount() - 2, 1);
-    QLayoutItem* tmp2 = mainLayout->itemAtPosition(mainLayout->rowCount() - 1, 1);
-    assert(tmp);
-    assert(tmp2);
-#endif
-
     fd.exec();
 
     if (fd.selectedFiles().count() != 1) {
@@ -623,31 +553,6 @@ void QProfWidget::openResultsFile ()
     QString filename = fd.selectedFiles().at(0);//.selectedFile();
 
     if (!filename.isEmpty()) {
-#if 0
-        if (fmtGPROF->isChecked () == true)
-            sLastFileFormat = FORMAT_GPROF;
-        else if (fmtFNCCHECK->isChecked () == true)
-            sLastFileFormat = FORMAT_FNCCHECK;
-        else if (fmtCALLG->isChecked () == true)
-            sLastFileFormat = FORMAT_CALLGRIND;
-        else sLastFileFormat = FORMAT_POSE;
-
-        //print a debug message
-        switch(sLastFileFormat) {
-        case    FORMAT_GPROF:
-            qDebug("Suppose Fileformat is \"GNU gprof\"");
-            break;
-        case    FORMAT_FNCCHECK:
-            qDebug("Suppose Fileformat is \"Function Check\"");
-            break;
-        case    FORMAT_POSE:
-            qDebug("Suppose Fileformat is \"PalmOS Emulator\"");
-            break;
-        case    FORMAT_CALLGRIND:
-            qDebug("Suppose Fileformat is \"Callgrind\"");
-            break;
-        }
-#endif
         //open the file
         openFile (filename, false);
     }
@@ -748,6 +653,11 @@ void QProfWidget::openFile (const QString &filename, bool compare)
     }
 
     sLastFileFormat = fileDetection(filename);
+
+    if (sLastFileFormat == -2) {
+        QMessageBox::critical (this, tr ("File is binary"), tr ("Wrong output file format\nDetected binary information"));
+        return;
+    }
 
     format = sLastFileFormat;
 
@@ -918,7 +828,7 @@ void QProfWidget::openFile (const QString &filename, bool compare)
             CParseProfile_fnccheck (t, mProfile);
         } else if (format == FORMAT_CALLGRIND) {
             CParseProfile_callgrind (t, mProfile);
-        }  else {
+        } else {
             CParseProfile_pose (t, mProfile);
         }
     }

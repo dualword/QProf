@@ -47,25 +47,6 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& t, QVector<CProfi
     strm = &t;
     workCProfile = &profile;
 
-    // because of the way CALLGRIND results are shown, we have to keep a dictionnary
-    // of indexes -> CProfileInfo*, and a list of call maps index -> parent index
-    QHash<QString, CProfileInfo*> functions;// (257);
-
-
-//     _call_re = QRegExp("^calls=\\s*(\\d+)\\s+((\\d+|\\+\\d+|-\\d+|\\*)\\s+)+$");
-//     _position_re = QRegExp("^(?P<position>[cj]?(?:ob|fl|fi|fe|fn))=\\s*(?:\((?P<id>\\d+)\\))?(?:\\s*(?P<name>.+))?");
-
-//     LineParser.__init__(self, infile);
-
-//     QString __subpos = QString("(0x[0-9a-fA-F]+|\\d+|\\+\\d+|-\\d+|\\*)");
-//
-//     _cost_re = QRegExp("^" + __subpos + "( +" + __subpos + ")*" + "( +\\d+)*" + "$");
-//     _key_re = QRegExp("^(\\w+):");
-
-//         # Textual positions
-//     position_ids = {};
-//     positions = {};
-
 //         # Numeric positions
     num_positions = 1;
     cost_positions = "line";
@@ -109,13 +90,9 @@ long long CParseProfile_callgrind::extractId(const QString& ln) {
 bool CParseProfile_callgrind::parse_cost_lines()
 {
     CProfileInfo *func;
-    // current position
-    nextLineType  = SelfCost;
     int lines = 0;
-    // default if there is no "positions:" line
-    hasLineInfo = true;
-    hasAddrInfo = false;
-//     long long actualId;
+    bool hasIdInfo = false;
+
 
     while (!strm->atEnd()) {
         line =  strm->readLine();
@@ -124,8 +101,21 @@ bool CParseProfile_callgrind::parse_cost_lines()
 //         if (lines > 1000)
 //             return false;
 
-        if (line.length() == 0)
+        if (line.length() == 0){
+            if (hasIdInfo == false)
+                continue;
+            
+            func = findFunction(actualFuncId);
+            if (func == NULL) {
+                continue;
+            }
+
+            func->custom.callgrind.cumSamples = func->custom.callgrind.selfSamples;
+            for(int i=0; i<func->numCalls.count(); i++) {
+                func->custom.callgrind.cumSamples += (func->numCalls[i] * func->called[i]->custom.callgrind.selfSamples);
+            }
             continue;
+        }
 
         char c = line.at(0).toLatin1();
 
@@ -134,10 +124,32 @@ bool CParseProfile_callgrind::parse_cost_lines()
         }
 
         if (c <= '9') {
-
             if (c == '#') {
                 continue;
             }
+
+            func = findFunction(actualFuncId);
+            if (func == NULL) {
+                continue;
+            }
+
+            QString num;
+            bool io;
+            unsigned long sampl;
+
+            int pos = line.lastIndexOf(" ");
+            if (pos > 0 )
+                num = line .mid(pos+1);
+            else
+                continue;
+
+            sampl = num.toULong(&io);
+            if (io == false) {
+                qDebug() << QString("Invalid line '%1'").arg(line);
+                continue;
+            }
+
+            func->custom.callgrind.selfSamples += sampl;
 
             // go through after big switch
         } else {
@@ -168,6 +180,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
                     }
 
                     func = make_function();
+                    hasIdInfo = true;
 
                     if (func == NULL) {
                         return false;
@@ -237,7 +250,10 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 if (line.startsWith("calls=")) {
                     // ignore long lines...
 //                     line.stripUInt64(currentCallCount);
+                    func = findFunction(actualFuncId);
                     if (func != NULL) {
+                        CProfileInfo* cf;
+                        cf = findFunction(actualCalledFuncId);
                         QString num;
                         int pos = line.indexOf("=");
                         if (pos > 0) {
@@ -246,31 +262,21 @@ bool CParseProfile_callgrind::parse_cost_lines()
                                 num = line.mid(pos + 1, posSpace-pos-1);
                             else
                                 num = line.mid(pos + 1);
-// if (actualCalledFuncId ==1760) qDebug() << "calls" << num;
-                            func->calls += num.toULongLong();
+
+                            for (int i= 0; i <func->numCalls.count(); i++){
+                                if (func->called[i] == cf){
+                                    func->numCalls[i] = num.toULongLong();
+                                }
+                            }
 
                         }
-
-
-//                         qDebug() << line << func->calls;
                     }
-
-                    nextLineType = CallCost;
                     continue;
                 }
 
                 // cmd:
                 if (line.startsWith("cmd:")) {
                     QString command = QString(line).trimmed();
-                    // ignore
-                    /*
-                                        if (!_data->command().isEmpty() &&
-                                                _data->command() != command) {
-
-                                            error(QString("Redefined command, was '%1'").arg(_data->command()));
-                                        }
-
-                                        _data->setCommand(command);*/
                     continue;
                 }
 
@@ -286,51 +292,21 @@ bool CParseProfile_callgrind::parse_cost_lines()
                 // jcnd=
                 if (line.startsWith("jcnd=")) {
                     bool valid;
-//ignore
-//                     valid = line.stripUInt64(jumpsFollowed) &&
-//                             line.startsWith("/") &&
-//                             line.stripUInt64(jumpsExecuted) &&
-//                             parsePosition(line, targetPos);
-//
-//                     if (!valid) {
-//                         error(QString("Invalid line after 'jcnd'"));
-//                     } else {
-                    nextLineType = CondJump;
-//                     }
-
                     continue;
                 }
 
                 if (line.startsWith("jump=")) {
                     bool valid;
-//ignore..
-//                     valid = line.stripUInt64(jumpsExecuted) &&
-//                             parsePosition(line, targetPos);
-//
-//                     if (!valid) {
-//                         error(QString("Invalid line after 'jump'"));
-//                     } else {
-                    nextLineType = BoringJump;
-//                     }
-
                     continue;
                 }
 
                 // jfi=
                 if (line.startsWith("jfi=")) {
-//                     currentJumpToFile = line.mid(line.indexOf(" ") + 1);
                     continue;
                 }
 
                 // jfn=
                 if (line.startsWith("jfn=")) {
-                    /*
-                                        if (!currentJumpToFile) {
-                                            // !=0 as functions needs file
-                                            currentJumpToFile = line.mid(line.indexOf(" ")+1);
-                                        }*/
-
-//                     currentJumpToFunction = line.mid(line.indexOf(" ") + 1);
                     continue;
                 }
 
@@ -363,16 +339,11 @@ bool CParseProfile_callgrind::parse_cost_lines()
 
                 // thread:
                 if (line.startsWith("thread:")) {
-                    // ignored
-//                     prepareNewPart();
-//                     _part->setThreadID(QString(line).toInt());
                     continue;
                 }
 
                 // timeframe (BB):
                 if (line.startsWith("timeframe (BB):")) {
-                    // ignored
-//                     _part->setTimeframe(line);
                     continue;
                 }
 
@@ -381,14 +352,6 @@ bool CParseProfile_callgrind::parse_cost_lines()
             case 'd':
                 // desc:
                 if (line.startsWith("desc:")) {
-
-//                     line.stripSurroundingSpaces();
-
-                    // desc: Trigger:
-//                     if (line.startsWith("Trigger:")) {
-//                         _part->setTrigger(line);
-//                     }
-
                     continue;
                 }
 
@@ -397,41 +360,11 @@ bool CParseProfile_callgrind::parse_cost_lines()
             case 'e':
                 // events:
                 if (line.startsWith("events:")) {
-//                     prepareNewPart();
-//                     mapping = _data->eventTypes()->createMapping(line);
-//                     _part->setEventMapping(mapping);
                     continue;
                 }
 
                 // event:<name>[=<formula>][:<long name>]
                 if (line.startsWith("event:")) {
-//                     line.stripSurroundingSpaces();
-
-//                     FixString e, f, l;
-//
-//                     if (!line.stripName(e)) {
-//                         error(QString("Invalid event"));
-//                         continue;
-//                     }
-//
-//                     line.stripSpaces();
-//
-//                     if (!line.stripFirst(c)) {
-//                         continue;
-//                     }
-//
-//                     if (c == '=') {
-//                         f = line.stripUntil(':');
-//                     }
-//
-//                     line.stripSpaces();
-//
-//                     // add to known cost types
-//                     if (line.isEmpty()) {
-//                         line = e;
-//                     }
-//
-//                     EventType::add(new EventType(e, line, f));
                     continue;
                 }
 
@@ -440,26 +373,16 @@ bool CParseProfile_callgrind::parse_cost_lines()
             case 'p':
                 // part:
                 if (line.startsWith("part:")) {
-                    // ignore
-//                     prepareNewPart();
-//                     _part->setPartNumber(QString(line).toInt());
                     continue;
                 }
 
                 // pid:
                 if (line.startsWith("pid:")) {
-                    // ignore
-//                     prepareNewPart();
-//                     _part->setProcessID(QString(line).toInt());
                     continue;
                 }
 
                 // positions:
                 if (line.startsWith("positions:")) {
-//                     prepareNewPart();
-//                     QString positions(line);
-                    hasLineInfo = line.contains("line");
-                    hasAddrInfo = line.contains("instr");
                     continue;
                 }
 
@@ -495,7 +418,7 @@ bool CParseProfile_callgrind::parse_cost_lines()
                     // handle like normal calls: we need the sum of call count
                     // recursive cost is discarded in cycle detection
 //                     line.stripUInt64(currentCallCount);
-                    nextLineType = CallCost;
+//                     nextLineType = CallCost;
 //
 //                     warning(QString("Old file format using deprecated 'rcalls'"));
                     continue;
@@ -513,75 +436,42 @@ bool CParseProfile_callgrind::parse_cost_lines()
 
         if (func == NULL)
             continue;
-
-        if (hasAddrInfo) { // instuctions only
-            QString num;
-            bool io;
-            long long sampl;
-//             int posHex = line.lastIndexOf(QRegExp("0x"));
-            int pos = line.lastIndexOf(QRegExp("(\\d+)"));
-            if (pos > 0)
-                num = line .mid(pos);
-
-            sampl = num.toLongLong(&io);
-            if (io == false) {
-                qDebug() << QString("Invalid line '%1'").arg(line);
-                continue;
-            }
-
-            if (func != NULL) {
-                func->custom.callgrind.selfSamples += sampl;
-            }
-        }
-
-        if (hasLineInfo) { // lines of source code
-            QString num;
-            bool io;
-            long long sampl;
-//             int posHex = line.lastIndexOf(QRegExp("0x"));
-            int pos = line.lastIndexOf(QRegExp("(\\d+)"));
-            if (pos > 0 )
-                num = line .mid(pos);
-
-            sampl = num.toLongLong(&io);
-            if (io == false) {
-                qDebug() << QString("Invalid line '%1'").arg(line);
-                continue;
-            }
-
-            if (func != NULL) {
-                func->custom.callgrind.selfSamples += sampl;
-            }
-        }
-
     }
 
     return true;
 }
 
 
-CProfileInfo* CParseProfile_callgrind::make_function()
+CProfileInfo* CParseProfile_callgrind::findFunction(long int id)
 {
-    //FIXME: module and fileName are not being tracked reliably
-    //id = "|".join((module, fileName, name))
-    CProfileInfo *p;
     long int num;
-    int pos;
+    CProfileInfo *p;
 
-// existiert?
     for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).name == function[actualFuncId]) break;
-//         num = workCProfile->indexOf(function);
+        if (workCProfile->at(num).name == function[id]) break;
     }
-
-// qDebug() << num << actualFuncId;
 
     if ( num >= 0 && num < workCProfile->count()) {
         p = (CProfileInfo*)&workCProfile->at(num);
         return p;
     }
 
-    if (actualFuncId== 1760) qDebug() << line;
+    return NULL;
+}
+
+
+CProfileInfo* CParseProfile_callgrind::make_function()
+{
+    CProfileInfo *p;
+    long int num;
+    int pos;
+
+// existiert?
+    p = findFunction(actualFuncId);
+
+    if (p != NULL)
+        return p;
+
 //     processCallGraphBlock (callGraphBlock, *workCProfile);
 
     p = new CProfileInfo;// Function(id, name);
@@ -597,50 +487,28 @@ CProfileInfo* CParseProfile_callgrind::make_function()
         p->libName = libName[actualLibId];
     }
 
-    pos = function[actualFuncId].indexOf("::");
-
+    p->name = function[actualFuncId];
+    
+    pos = p->name.indexOf("::");
+    p->object = "";
+    p->method = "";
+//     p->htmlName = "";
+    
     if ( pos > 0) {
-        p->object = function[actualFuncId].left(pos);
-        p->method = function[actualFuncId].mid (pos + 2);
+        p->object = p->name.left(pos);
+        p->method = p->name.mid (pos + 2);
     }
 
     p->calls = 0;
     p->custom.callgrind.selfSamples = 0;
-    p->name = function[actualFuncId];
-
-//     qDebug() << p->libName << p->fileName << p->name;
+    p->custom.callgrind.cumSamples = 0;
 
     p->called.clear();
     workCProfile->append(*p);
 
-//-----------------
-
-//     // gather other values (we have to do some guessing to get them right)
-//     while (field < fields.count ()) {
-//         if (countRegExp.indexIn (fields[field], 0) == 0) {
-//             e->recursive = fields[field].indexOf ('+') != -1;
-//         } else if (floatRegExp.indexIn (fields[field], 0) == -1) {
-//             e->name = fields[field];
-//         }
-//
-//         field++;
-//     }
-
-    // if we got a call graph block without a primary function name,
-    // drop it completely.
-//     if (e->name == NULL || e->name.length() == 0) {
-//         delete e;
-// //         break;
-//     }
-    /*
-        if (e->primary == true && count.indexOf ('+') != -1) {
-            e->recursive = true;
-        }*/
-
-//     callGraphBlock.append(*e);
-
     return p;
 }
+
 
 CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
 {
@@ -651,17 +519,14 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
     long int num;
     int pos;
 
-// existiert?
-    for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).name == function[actualCalledFuncId]) break;
-//         num = workCProfile->indexOf(function);
-    }
+    p = findFunction(actualCalledFuncId);
 
-    if (actualCalledFuncId== 1760)qDebug() << line;
-//     qDebug() << "called:" << num << actualCalledFuncId << function[actualCalledFuncId];
-
-    if ( num >= 0 && num < workCProfile->count()) {
-        p = (CProfileInfo*)&workCProfile->at(num);
+    if (p != NULL){
+        f = findFunction(actualFuncId);
+        if (f != NULL){
+            f->called.append(p);
+            f->numCalls.append(0); 
+        }
         return p;
     }
 
@@ -680,32 +545,29 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction()
         p->libName = libName[actualCalledLibId];
     }
 
-    pos = function[actualCalledFuncId].indexOf("::");
-
+    p->name = function[actualCalledFuncId];
+    
+    pos = p->name.indexOf("::");
+    p->object = "";
+    p->method = "";
+//     p->htmlName = "";
+        
     if ( pos > 0) {
-        p->object = function[actualCalledFuncId].left(pos);
-        p->method = function[actualCalledFuncId].mid (pos + 2);
+        p->object = p->name.left(pos);
+        p->method = p->name.mid (pos + 2);
     }
 
     p->calls = 0;
     p->custom.callgrind.selfSamples = 0;
-    p->name = function[actualCalledFuncId];
-
+    p->custom.callgrind.cumSamples = 0;
+  
     p->called.clear();
 
     // was called from:
-    for (num = 0; num < workCProfile->count(); ++num) {
-        if (workCProfile->at(num).name == function[actualFuncId]) break;
-//         num = workCProfile->indexOf(function);
-    }
-
-//     f = NULL;
-
-    if ( num >= 0 && num < workCProfile->count()) {
-        f = (CProfileInfo*)&workCProfile->at(num);
-
-//         p->callers.append(f);
+    f = findFunction(actualFuncId);
+    if (f != NULL){
         f->called.append(p);
+        f->numCalls.append(0); // init for number of calls
     }
 
     workCProfile->append(*p);

@@ -275,14 +275,6 @@ QString CProfileViewItem::getText (int column) const
                 if (column == col_cumCycles) {
                     return QString::number (mProfile->custom.pose.cumCycles);
                 }
-            } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
-                if (column == col_selfCycles) {
-                    return QString::number (mProfile->custom.callgrind.selfSamples);
-                }
-
-                if (column == col_cumCycles) {
-                    return QString::number (mProfile->custom.callgrind.cumSamples);
-                }
             }
 
             return "";

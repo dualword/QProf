@@ -30,7 +30,7 @@
 
 #define col_function_t                "Function/Method"
 #define col_recursive_t               "R"
-#define col_count_t                   "Count"
+#define col_count_t                   "Calls"
 #define col_total_t                   "Total (s)"
 #define col_totalPercent_t            "%"
 #define col_self_t                    "Self (s)"

@@ -82,6 +82,8 @@ private:
     long long extractId(const QString& ln);
     bool parse_key(const QString& key );
     bool parse_keys(const QStringList& keyList);//??
+
+    CProfileInfo* findFunction(long int id);
     CProfileInfo* make_function(void);
     CProfileInfo* make_CalledFunction(void);
 //         CProfileInfo* get_function_entries();
@@ -108,12 +110,12 @@ private:
     QHash<int, QString> fileName;  // id for file name
     QHash<int, QString> function;  // id for function name
     // current position
-    lineType nextLineType;
+//     lineType nextLineType;
 
     QHash<int, QString> currentJumpToFile;
     QHash<int, QString> currentJumpToFunction;
-    bool hasLineInfo;
-    bool hasAddrInfo;
+//     bool hasLineInfo;
+//     bool hasAddrInfo;
     long long int summary;
 
     QTextStream *strm;

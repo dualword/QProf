@@ -52,8 +52,9 @@ public:
     QString     arguments;              // function/method arguments
     QString     fileName;
     QString     libName;
-    QList<CProfileInfo *> called;      // list of functions called by this one
-    QList<CProfileInfo *> callers;     // list of functions that this one calls
+    QVector<CProfileInfo *> called;      // list of functions called by this one
+    QVector<int>  numCalls;
+    QVector<CProfileInfo *> callers;     // list of functions that this one calls
     CProfileInfo* previous;             // when comparing, points to the previous profile result for this entry
 
     void dumpHtml(const QString& tempDir);
@@ -84,8 +85,8 @@ public:
 
         // callgrind Emulator
         struct {
-            long    selfSamples;
-            long    cumSamples;
+            long long  selfSamples;
+            long long  cumSamples;
         } callgrind;
 
         // Palm OS Emulator
