@@ -28,6 +28,7 @@
 #include <QString>
 #include <QPainter>
 #include <QLocale>
+#include <QDebug>
 #include <QIcon>
 
 #include "./includes/qprofwidget.h"
@@ -73,38 +74,40 @@ void CProfileViewItem::setTextInformation()
     if (mProfile == NULL) {
         return;
     }
-
+    
+//     if (mProfile->name == NULL) {
+//         return;
+//     }
+    
+//     qDebug() << mProfile->name;
     this->setText(col_function, mProfile->name);
 
     if (QProfWidget::sDiffMode == false) {
         switch(QProfWidget::sLastFileFormat) {
         case    FORMAT_GPROF:
-
             for (int i = col_count; i <= col_selfMsPerCall; i++) {
                 this->setData(i, Qt::DisplayRole, getText(i));
             }
-
             break;
+            
         case    FORMAT_FNCCHECK:
-
             for (int i = col_count; i <= col_maxMsPerCall; i++) {
                 this->setData(i, Qt::DisplayRole, getText(i));
             }
-
             break;
+            
         case    FORMAT_POSE:
-
             for (int i = col_count; i <= col_cumCycles; i++) {
                 this->setData(i, Qt::DisplayRole, getText(i));
             }
-
             break;
+            
         case    FORMAT_CALLGRIND:
             for (int i = col_count; i <= col_cumCycles; i++) {
                 this->setData(i, Qt::DisplayRole, getText(i));
             }
-
             break;
+            
         default:
             break;
         }
@@ -113,33 +116,29 @@ void CProfileViewItem::setTextInformation()
     } else {
         switch(QProfWidget::sLastFileFormat) {
         case    FORMAT_GPROF:
-
             for (int i = diff_col_status; i <= diff_col_new_selfMsPerCall; i++) {
                 this->setData(i, Qt::DisplayRole, getText( i));
             }
-
             break;
+            
         case    FORMAT_FNCCHECK:
-
             for (int i = diff_col_status; i <= diff_col_maxMsPerCall; i++) {
                 this->setData(i, Qt::DisplayRole, getText( i ));
             }
-
             break;
+            
         case    FORMAT_POSE:
-
             for (int i = diff_col_status; i <= diff_col_new_cumCycles; i++) {
                 this->setData(diff_col_selfCycles, Qt::DisplayRole, getText( diff_col_selfCycles ));
             }
-
             break;
+            
         case    FORMAT_CALLGRIND:
-
             for (int i = diff_col_status; i <= diff_col_new_cumCycles; i++) {
                 this->setData(diff_col_selfCycles, Qt::DisplayRole, getText( diff_col_selfCycles ));
             }
-
             break;
+            
         default:
             break;
         }

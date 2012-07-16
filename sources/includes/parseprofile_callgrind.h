@@ -64,28 +64,29 @@ public:
 
 private:
     CParseProfile_callgrind(); // init
-    bool parsePosition(const QString& s, PositionSpec& newPos);
-    bool parse_part();
-    bool parse();
-    bool parse_header_line();
-    bool parse_part_detail();
-    bool parse_description();
-    bool parse_event_specification();
-    bool parse_cost_line_def();
-    bool parse_cost_summary();
-    bool parse_body_line();
-    bool parse_cost_lines();
-    bool parse_association_spec();
-    bool parse_position_spec();
-    bool parse_empty();
-    bool parse_comment();
+//     bool parsePosition(const QString& s, PositionSpec& newPos);
+//     bool parse_part();
+//     bool parse();
+//     bool parse_header_line();
+//     bool parse_part_detail();
+//     bool parse_description();
+//     bool parse_event_specification();
+//     bool parse_cost_line_def();
+//     bool parse_cost_summary();
+//     bool parse_body_line();
+//     bool parse_cost_lines();
+//     bool parse_association_spec();
+//     bool parse_position_spec();
+//     bool parse_empty();
+//     bool parse_comment();
     long long extractId(const QString& ln);
     bool parse_key(const QString& key );
     bool parse_keys(const QStringList& keyList);//??
 
-    CProfileInfo* findFunction(long int id);
-    CProfileInfo* make_function(void);
-    CProfileInfo* make_CalledFunction(void);
+    bool buildGraph(CProfileInfo* p, bool prim);
+    CProfileInfo* findFunction(QVector<CProfileInfo> &workCProfile, long int id);
+    CProfileInfo* make_function(QVector<CProfileInfo> &workCProfile);
+    CProfileInfo* make_CalledFunction(QVector<CProfileInfo> &workCProfile);
 //         CProfileInfo* get_function_entries();
 //         CProfileInfo* get_call_entries();
 
@@ -98,7 +99,7 @@ private:
     QString cost_positions;
 //     QRegExp _cost_re;
 //     QRegExp _key_re;
-
+    long linenr;
     int  actualFileId;
     int  actualLibId;
     int  actualFuncId;
@@ -120,7 +121,7 @@ private:
 
     QTextStream *strm;
     QString line;
-    QVector<CProfileInfo>* workCProfile;
+//     QVector<CProfileInfo>* workCProfile;
 
     long int num_events;
 //     cost_events;

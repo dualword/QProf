@@ -17,6 +17,7 @@
 
 #include "./includes/cprofileinfo.h"
 #include <QTextStream>
+#include <QDebug>
 #include <QRegExp>
 //Added by qt3to4:
 // #include <QTextOStream>
@@ -51,7 +52,7 @@ CProfileInfo::~CProfileInfo()
 void CProfileInfo::dumpHtml(const QString& tempDir)
 {
 //     QByteArray dumpText;
-
+    return;
     //Open the temporary file used to store the HTML.
     QString fileName = tempDir + htmlName + "::" + method + ".html" ;
     fileName = fileName.replace(QRegExp(" "), "_");
@@ -139,12 +140,13 @@ void CProfileInfo::dumpHtml(const QString& tempDir)
 
     //Iterator through all  the method called by this one.
     stream << "<H2>Called</H2>" << endl;
+    int cn = called.count();
 
-    if (called.count ()) {
-        for (uint i = 0; i < called.count (); i++) {
+    if (cn) {
+        for (uint i = 0; i < cn; i++) {
             stream << "<TR>";
             CProfileInfo *p = called[i];
-
+// qDebug() << p->method ;
             if (p->method == "") {
                 stream << "<TD><A HREF= \"" << tempDir << p->htmlName << "::" << p->method << ".html\"> "
                        << p->htmlName << "</A></TD>" << endl;

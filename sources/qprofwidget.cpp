@@ -1077,7 +1077,7 @@ void QProfWidget::fillFlatProfileList ()
 
 void QProfWidget::fillHierProfileList ()
 {
-    for (unsigned int i = 0; i < mProfile.size(); i++) {
+    for (unsigned int i = 0; i < mProfile.count(); i++) {
         CProfileViewItem *item = new CProfileViewItem (mHier, &mProfile[i]);
         QVector<CProfileInfo *> addedEntries;// = new QVector<CProfileInfo *>[mProfile.size ()];
 
