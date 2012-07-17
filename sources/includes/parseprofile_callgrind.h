@@ -125,7 +125,7 @@ private:
 
     long int num_events;
 //     cost_events;
-    QVector<SCallGraphEntry> callGraphBlock;
+//     QVector<SCallGraphEntry> callGraphBlock;
 
 };
 

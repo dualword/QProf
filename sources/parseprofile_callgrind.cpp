@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 
+#include "./includes/parseprofile.h"
 #include "./includes/cprofileinfo.h"
 #include "./includes/qprofwidget.h"
 
@@ -71,8 +72,8 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 //             for(int i=0; i<func->numCalls.count(); i++) {
 //                 func->custom.callgrind.cumSamples += (func->numCalls[i] * func->called[i]->custom.callgrind.selfSamples);
 //             }
-            processCallGraphBlock (callGraphBlock, profile);
-            callGraphBlock.resize (0);
+//             processCallGraphBlock (callGraphBlock, profile);
+//             callGraphBlock.resize (0);
 
             continue;
         }
@@ -414,8 +415,8 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             continue;
     }
 
-    processCallGraphBlock (callGraphBlock, profile);
-    callGraphBlock.resize(0);
+//     processCallGraphBlock (callGraphBlock, profile);
+//     callGraphBlock.resize(0);
 //     return true;
 
 }
@@ -444,7 +445,7 @@ CProfileInfo* CParseProfile_callgrind::findFunction(QVector<CProfileInfo>& workC
 
     for (num = 0; num < workCProfile.count(); ++num) {
         if (workCProfile[num].name == function[id]) {
-            p = (CProfileInfo*)&workCProfile[num];
+            p = &workCProfile[num];
             return p;
         }
     }
@@ -452,7 +453,7 @@ CProfileInfo* CParseProfile_callgrind::findFunction(QVector<CProfileInfo>& workC
     return NULL;
 }
 
-
+#if 0
 bool CParseProfile_callgrind::buildGraph(CProfileInfo* p, bool prim)
 {
     bool recFound = false;
@@ -487,12 +488,12 @@ bool CParseProfile_callgrind::buildGraph(CProfileInfo* p, bool prim)
     callGraphBlock.append(*e);
     return true;
 }
-
+#endif
 
 CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& workCProfile)
 {
     CProfileInfo *p;
-    long int num;
+//     long int num;
     int pos;
 
 // existiert?
@@ -500,10 +501,10 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
 
     if (p != NULL){
         p->name = function[actualFuncId];
-        if (buildGraph(p, true) == false){
-            delete p;
-            return NULL;
-        }
+//         if (buildGraph(p, true) == false){
+//             delete p;
+//             return NULL;
+//         }
         return p;
     }
 //
@@ -519,11 +520,11 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
         delete p;
         return NULL;
     }
-
+/*
     if (buildGraph(p, true) == false){
         delete p;
         return NULL;
-    }
+    }*/
 
     pos = p->name.indexOf("::");
 
@@ -543,50 +544,68 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 {
     //FIXME: module and fileName are not being tracked reliably
     //id = "|".join((module, fileName, name))
-    CProfileInfo *p;
+    CProfileInfo *cf;
     CProfileInfo *f;
-    long int num;
+//     long int num;
     int pos;
 
-    p = findFunction(workCProfile, actualCalledFuncId);
+    cf = findFunction(workCProfile, actualCalledFuncId);
 
-    if (p != NULL) {
-        p->name = function[actualCalledFuncId];
-        if (buildGraph(p, false) == false){
-            delete p;
-            return NULL;
+    if (cf != NULL) { // exists
+        cf->name = function[actualCalledFuncId];
+
+        f = findFunction(workCProfile, actualFuncId);
+        if (f != NULL) {
+//             f->name = function[actualFuncId];
+
+            f->called.append(cf);
+            f->numCalls.append(0);
+            cf->callers.append(f);
         }
-        return p;
+
+        return cf;
     }
 
-    p = new CProfileInfo;// Function(id, name);
-    p->fileName = fileName[actualCalledFileId];
+    cf = new CProfileInfo;// Function(id, name);
+    cf->fileName = fileName[actualCalledFileId];
 
     if (libName[actualCalledLibId].length() > 0) {
-        p->libName = libName[actualCalledLibId];
+        cf->libName = libName[actualCalledLibId];
     }
 
-    p->name = function[actualCalledFuncId];
-    if (p->name.length() == 0) {
-        delete p;
+    cf->name = function[actualCalledFuncId];
+    if (cf->name.length() == 0) {
+        delete cf;
         return NULL;
     }
 
-    if (buildGraph(p, false) == false){
-        delete p;
-        return NULL;
-    }
+//     if (buildGraph(p, false) == false){
+//         delete p;
+//         return NULL;
+//     }
 
-    pos = p->name.indexOf("::");
+    pos = cf->name.indexOf("::");
 
     if ( pos > 0) {
-        p->object = p->name.left(pos);
-        p->method = p->name.mid (pos + 2);
+        cf->object = cf->name.left(pos);
+        cf->method = cf->name.mid (pos + 2);
     }
 
-    workCProfile.append(*p);
+    workCProfile.append(*cf);
 
-    return p;
+    f = findFunction(workCProfile, actualFuncId);
+    if (f != NULL) {
+//         f->name = function[actualFuncId];
+         
+        f->called.append(cf);
+        f->numCalls.append(0);
+        cf->callers.append(f);
+//         f->name = function[actualCalledFuncId];
+
+//         return p;
+    }
+    
+    return cf;
 }
 
 

@@ -1098,14 +1098,18 @@ void QProfWidget::fillHierProfileList ()
 
 void QProfWidget::fillHierarchy ( CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count)
 {
-    for (uint i = 0; i < parent->called.count (); i++) {
+    for (uint i = 0; i < parent->called.count(); ++i) {
+         if (parent->called[i] == NULL)
+            break;
+        
         // skip items already added to avoid recursion
         if (addedEntries.indexOf (parent->called[i]) != -1) {
             continue;
         }
-
+        
         CProfileInfo * tmpProfile = new CProfileInfo();
         tmpProfile = parent->called[i];
+        
         addedEntries.append(tmpProfile);
         CProfileViewItem *newItem = new CProfileViewItem (item, parent->called[i]);
 
