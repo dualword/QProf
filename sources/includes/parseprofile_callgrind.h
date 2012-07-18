@@ -82,7 +82,7 @@ private:
     long long extractId(const QString& ln);
     bool parse_key(const QString& key );
     bool parse_keys(const QStringList& keyList);//??
-
+    void cleanPointers(QVector<CProfileInfo>& workCProfile);
     bool buildGraph(CProfileInfo* p, bool prim);
     CProfileInfo* findFunction(QVector<CProfileInfo> &workCProfile, long int id);
     CProfileInfo* make_function(QVector<CProfileInfo> &workCProfile);
