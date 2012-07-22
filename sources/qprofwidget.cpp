@@ -1099,11 +1099,11 @@ void QProfWidget::fillHierProfileList ()
 void QProfWidget::fillHierarchy ( CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count)
 {
     for (uint i = 0; i < parent->called.count(); ++i) {
-         if (parent->called[i] == NULL)
+        if (parent->called[i] == NULL)
             break;
 
         qDebug() << parent->called[i]->name;
-         
+
         // skip items already added to avoid recursion
         if (addedEntries.indexOf (parent->called[i]) != -1) {
             continue;
