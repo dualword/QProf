@@ -26,10 +26,11 @@
 #define __CPROFILEINFO_H__
 
 #include <QVector>
+#include <QFile>
 #include <QString>
 #include <QList>
 
-#include "qproffile.h"
+// #include "qproffile.h"
 
 
 /*

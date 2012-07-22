@@ -15,7 +15,6 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/clientsidemap.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/cprofileviewitem.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/dotCallGraph.cpp
-		    ${CMAKE_CURRENT_SOURCE_DIR}/qproffile.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_fnccheck.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_pose.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_callgrind.cpp
@@ -29,7 +28,6 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/constants.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/cprofileinfo.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/ctidyup.h
-		${CMAKE_CURRENT_SOURCE_DIR}/includes/qproffile.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/qprofwidget.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/aboutform.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_gprof.h

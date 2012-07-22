@@ -28,7 +28,7 @@
 #include <QtGui>
 #include <QSplashScreen>
 
-#include "./includes/qprof.h"
+// #include "./includes/qprof.h"
 #include "./includes/Log.h"
 #include "./includes/qprofwidget.h"
 #include "./includes/constants.h"
