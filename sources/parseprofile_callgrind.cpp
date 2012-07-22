@@ -563,6 +563,9 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
         p->object = p->name.left(pos);
         p->method = p->name.mid (pos + 2);
     }
+    else
+        p->method = p->name;
+        
 
     workCProfile.append(*p);
 
@@ -587,9 +590,14 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 
         f = findFunction(workCProfile, actualFuncId);
         if (f != NULL) {
-            f->called.append(cf);
-            f->numCalls.append(0);
-            cf->callers.append(f);
+//             if (f->called.count() == 0 || f->called.indexOf(cf) == -1){
+//                 f->called.append(cf);
+//                 f->numCalls.append(0);
+//             }
+//             
+            if (cf->callers.count() == 0 || cf->callers.indexOf(f) == -1){
+                cf->callers.append(f);
+            }
         }
 
         return cf;
@@ -626,12 +634,18 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
         cf->object = cf->name.left(pos);
         cf->method = cf->name.mid (pos + 2);
     }
+    else
+        cf->method = cf->name;
 
     f = findFunction(workCProfile, actualFuncId);
     if (f != NULL) {
-        f->called.append(cf);
-        f->numCalls.append(0);
-        cf->callers.append(f);
+        if (f->called.count() == 0 || f->called.indexOf(cf) == -1){
+            f->called.append(cf);
+            f->numCalls.append(0);
+        }
+//          if (cf->callers.count() == 0 || cf->callers.indexOf(f) == -1){
+//             cf->callers.append(f);
+//          }
     }
 
     workCProfile.append(*cf);

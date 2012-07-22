@@ -839,7 +839,7 @@ void QProfWidget::openFile (const QString &filename, bool compare)
     prepareProfileView (mFlat, false, sLastFileFormat);
     prepareProfileView (mHier, true, sLastFileFormat);
     prepareProfileView (mObjs, true, sLastFileFormat);
-
+#if 1
     prepareHtmlPart(mCallTree);
 
     //For the time being dump all the method html
@@ -847,7 +847,7 @@ void QProfWidget::openFile (const QString &filename, bool compare)
     for (unsigned int i = 0; i < mProfile.size (); i++) {
         (mProfile[i]).dumpHtml(processName);
     }
-
+#endif
     // fill lists
     fillFlatProfileList ();
     fillHierProfileList ();
@@ -1101,15 +1101,17 @@ void QProfWidget::fillHierarchy ( CProfileViewItem *item, CProfileInfo *parent, 
     for (uint i = 0; i < parent->called.count(); ++i) {
          if (parent->called[i] == NULL)
             break;
-        
+
+        qDebug() << parent->called[i]->name;
+         
         // skip items already added to avoid recursion
         if (addedEntries.indexOf (parent->called[i]) != -1) {
             continue;
         }
-        
+
         CProfileInfo * tmpProfile = new CProfileInfo();
         tmpProfile = parent->called[i];
-        
+
         addedEntries.append(tmpProfile);
         CProfileViewItem *newItem = new CProfileViewItem (item, parent->called[i]);
 
