@@ -56,8 +56,8 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
         line =  strm.readLine();
         line = line.simplified();
         linenr++;
-        if (linenr > 1000)
-            break;
+//         if (linenr > 1000)
+//             break;
 
         if (line.length() == 0) {
             if (hasIdInfo == false)
@@ -595,9 +595,9 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 //                 f->numCalls.append(0);
 //             }
 //
-            if (cf->callers.count() == 0 || cf->callers.indexOf(f) == -1) {
-                cf->callers.append(f);
-            }
+//             if (cf->callers.count() == 0 || cf->callers.indexOf(f) == -1) {
+//                 cf->callers.append(f);
+//             }
         }
 
         return cf;
