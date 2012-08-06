@@ -37,6 +37,7 @@ void AxisBase::setRanges(double min, double max)
 {
     m_min = min;
     m_max = qMax(max, m_min);
+    setTicks(0.0, max/10.0);
 }
 
 void AxisBase::setTicks(double minor, double major)

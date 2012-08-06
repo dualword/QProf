@@ -1,3 +1,5 @@
+#include <QAbstractItemView>
+
 #include "./includes/plotterbase.h"
 #include "./includes/axisbase.h"
 
@@ -58,6 +60,7 @@ void PlotterBase::setModel(QAbstractItemModel *model)
     if (m_model) {
         setMouseTracking(true);
         connect(m_model, SIGNAL(dataChanged(const QModelIndex &,const QModelIndex &)), this, SLOT(repaint()));
+//         connect(m_model, SIGNAL(mouseMoveEvent( QMouseEvent* )), this, SLOT(mouseMoveEvent( QMouseEvent* )));
 //         connect(m_model, SIGNAL(customContextMenuRequested ( const QPoint & pos )),  this, SLOT(showEvent(QShowEvent *event))));
 //         connect(m_model, SIGNAL(cursorMoved(const QModelIndex &,const QModelIndex &)), this, SLOT(showEvent(QShowEvent *event)));
         connect(m_model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)), this, SLOT(repaint()));
@@ -98,17 +101,9 @@ void PlotterBase::setModel(QAbstractItemModel *model)
 //     return -1;
 // }
 
-void PlotterBase::mouseMoveEvent( QMouseEvent* )
+void PlotterBase::mouseMoveEvent( QMouseEvent* event)
 {
-//    QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-//    QHelpEvent helpEvent(this);
-//     int index = itemAt(helpEvent.pos());
-//     if (index != -1) {
-//         QToolTip::showText(helpEvent.globalPos(), helpEvent.toolTip());
-//     } else {
-//         QToolTip::hideText();
-//         event->ignore();
-//     }
+     qDebug() << "mouse event " ;
 }
 
 void PlotterBase::mousePressEvent( QMouseEvent* )
@@ -124,9 +119,9 @@ void PlotterBase::mousePressEvent( QMouseEvent* )
 //      }
 }
 
-void PlotterBase::mouseReleaseEvent( QMouseEvent* )
+void PlotterBase::mouseReleaseEvent( QMouseEvent* ) // click of mouse
 {
-//     qDebug() << "mouse";
+    qDebug() << "mouse release ";
 }
 
 

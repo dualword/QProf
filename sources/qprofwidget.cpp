@@ -21,6 +21,19 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *
+ * 
+ *            Information about version changes. Developer of project E. Kalinowski
+ *
+ * 0.9.0      06 jul 2012    first release. complete ported from kprof project
+ * 0.9.4      12 jul 2012    debug fixing, autodetection of file format: callgrind, gprof, funccheck
+ * 1.0.0      06 aug 2012    overview page added, removed "compare" functionality, select of file.
+ *                           loading of multoply files, autodetection of ELF format, if executable
+ * 1.1.0      __ aug 2012    scaling for seconds enabled, overview page
+ *                           ToolTip information on overview page for displaying of function/method names
+ * 1.2.0      __ aug 2012    onClick added to select on overview page
+ * 
  */
 
 #include <cstdlib>
@@ -171,7 +184,6 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 //     connect(mCallTree, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
 
 //     connect(mMethod, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
-
 
     mFlat->setContextMenuPolicy(Qt::CustomContextMenu);
     connect (mFlat, SIGNAL (customContextMenuRequested(const QPoint&)), this, SLOT (profileEntryRightClick(const  QPoint&)));
@@ -478,13 +490,9 @@ void QProfWidget::loadSettings ()
 
     //Load last FileFormat settings
     sLastFileFormat = (short int)settings.value ("LastFileFormat", 1).toInt();
-//  qDebug("LastFileFormat was=%d",sLastFileFormat);
 
     // loop for the recent file list
-
     int len = settings.beginReadArray("RecentFiles");
-
-//     recMenu = actionOpen_Recent->addMenu(tr("&Recent files"));
 
     disconnect (recentGroup, SIGNAL (triggered(QAction*)), this, SLOT (openRecentFile(QAction*)));
     actRecentSelect.clear();
@@ -530,7 +538,6 @@ void QProfWidget::selectFile (QAction* act)
 
     for(num = 0; num < actFileSelect.count(); ++num) {
         if (actFileSelect.at(num)->isChecked() == true) {
-//             actFileSelect.at(num)->setChecked(true);
             selectedProfileNum = num;
             break;
         }
@@ -711,7 +718,7 @@ void QProfWidget::openDialogFile ()
     if (filelist.count() > 0) {
         selectedProfileNum = addPos;
         selectGroup->actions().at(addPos)->setChecked (true);
-        
+
         emit selectFile(selectGroup->actions().at(addPos));
     }
 }
@@ -730,7 +737,7 @@ void QProfWidget::additionalFiles ()
     if (fl.count() > 0) {
         openFileList(fl);
         rebuildSelectGroup();
-        
+
         selectedProfileNum = pos;
         selectGroup->actions().at(pos)->setChecked(true);
 
@@ -1251,7 +1258,10 @@ void QProfWidget::fillOverviewProfileList ()
         }
 
         if (percentDiag == false) {
-            mBarPlot->axisY()->setRanges(0, maxVal);
+            if (maxVal < 1.0)
+                mBarPlot->axisY()->setRanges(0, 1);
+            else
+                mBarPlot->axisY()->setRanges(0, maxVal);
             mBarPlot->setBarScale(0.5);
         }
         mBarPlot->setModel(itemModel);

@@ -24,8 +24,8 @@
 #ifndef __QPROFCONSTS_H__
 #define __QPROFCONSTS_H__
 
-#define PROGRAM_NAME "QProf v.1.0.0"
-#define PROGRAM_VERSION "<b>v.1.0.0 (07 aug 2012)</b>"
+#define PROGRAM_NAME "QProf v.1.1.0"
+#define PROGRAM_VERSION "<b>v.1.1.0 (09 aug 2012)</b>"
 
 
 #define col_function_t                "Function/Method"
@@ -40,7 +40,7 @@
 // Function Check specific columns
 #define col_minMsPerCall_t            "Min. ms/call"
 #define col_maxMsPerCall_t            "Max. ms/call"
-// POSE specific columns
+// CALLGRIND , POSE specific columns
 #define col_selfCycles_t              "Self Cycles"
 #define col_cumCycles_t               "Total Cycles"
 // CALLGRIND specific columns
