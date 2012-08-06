@@ -15,6 +15,9 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/clientsidemap.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/cprofileviewitem.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/dotCallGraph.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/axisbase.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/barchartplotter.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/plotterbase.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_fnccheck.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_pose.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_callgrind.cpp
@@ -36,6 +39,9 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_oprofile.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_sleepy.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_perf.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/axisbase.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/barchartplotter.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/includes/plotterbase.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/clientsidemap.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/cprofileviewitem.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/dotCallGraph.h

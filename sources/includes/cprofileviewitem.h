@@ -56,7 +56,6 @@ private:
     void setRecursiveIcon ();
     void setTextInformation();
     static QString formatFloat (float n, int precision);
-    static QString formatSpeedDiff (float newSpeed, float oldSpeed);
 };
 
 #endif

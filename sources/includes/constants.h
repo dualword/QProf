@@ -24,8 +24,8 @@
 #ifndef __QPROFCONSTS_H__
 #define __QPROFCONSTS_H__
 
-#define PROGRAM_NAME "QProfiler v.0.9.4"
-#define PROGRAM_VERSION "<b>v.0.9.4 (13 july 2012)</b>"
+#define PROGRAM_NAME "QProf v.1.0.0"
+#define PROGRAM_VERSION "<b>v.1.0.0 (07 aug 2012)</b>"
 
 
 #define col_function_t                "Function/Method"
@@ -48,32 +48,6 @@
 // #define col_cumCycles_t               "Total Cycles"
 
 
-#define diff_col_function_t           "Function/Method"
-#define diff_col_status_t             "Remarks"
-#define diff_col_count_t              "Old Count"
-#define diff_col_new_count_t          "New Count"
-#define diff_col_total_t              "Old Total (s)"
-#define diff_col_new_total_t          "New Total (s)"
-#define diff_col_totalPercent_t       "Old %"
-#define diff_col_new_totalPercent_t   "New %"
-#define diff_col_self_t               "Old Self (s)"
-#define diff_col_new_self_t           "New Self (s)"
-#define diff_col_totalMsPerCall_t     "Old Total ms/call"
-#define diff_col_new_totalMsPerCall_t "New Total ms/call"  // last column common to all formats
-// gprof specific columns
-#define diff_col_selfMsPerCall_t     "Old Self ms/call"
-#define diff_col_new_selfMsPerCall_t "New Self ms/call"
-// Function Check specific columns
-#define diff_col_minMsPerCall_t      "Old Min. ms/call"
-#define diff_col_new_minMsPerCall_t  "New Min. ms/call"
-#define diff_col_maxMsPerCall_t      "Old Max. ms/call"
-#define diff_col_new_maxMsPerCall_t  "New Max. ms/call"
-// POSE specific columns
-#define diff_col_selfCycles_t        "Old Self Cycles"
-#define diff_col_new_selfCycles_t    "New Self Cycles"
-#define diff_col_cumCycles_t         "Old Total Cycles"
-#define diff_col_new_cumCycles_t     "New Total Cycles"
-
 #define col_function        0
 #define col_recursive       1
 #define col_count           2
@@ -89,32 +63,6 @@
 // POSE, CALLGRIND specific columns
 #define col_selfCycles      7
 #define col_cumCycles     8
-
-#define diff_col_function       0
-#define diff_col_status         1
-#define diff_col_count          2
-#define diff_col_new_count      3
-#define diff_col_total          4
-#define diff_col_new_total      5
-#define diff_col_totalPercent   6
-#define diff_col_new_totalPercent 7
-#define diff_col_self           8
-#define diff_col_new_self       9
-#define diff_col_totalMsPerCall 10
-#define diff_col_new_totalMsPerCall 11  // last column common to all formats
-// gprof specific columns
-#define diff_col_selfMsPerCall  12
-#define diff_col_new_selfMsPerCall 13
-// Function Check specific columns
-#define diff_col_minMsPerCall   12
-#define diff_col_new_minMsPerCall 13
-#define diff_col_maxMsPerCall   14
-#define diff_col_new_maxMsPerCall 15
-// POSE, CALLGIND specific columns
-#define diff_col_selfCycles     12
-#define diff_col_new_selfCycles 13
-#define diff_col_cumCycles      14
-#define diff_col_new_cumCycles 15
 
 
 #endif

@@ -51,7 +51,7 @@ void CParseProfile::processCallGraphBlock (const QVector<SCallGraphEntry> &data,
         // @@@ should perform better error reporting here
         if (i != data.count ())
             qDebug()  << "missing flat profile entry for '" << data[i].name.toLatin1()
-                      << "' (line " << data[i].line << ")" << endl;
+                      << "' (line " << data[i].line << ")";
 
         return;
     }

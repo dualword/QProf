@@ -20,6 +20,61 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="tab_6">
+       <attribute name="title">
+        <string>Overview</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QRadioButton" name="radioButton">
+             <property name="text">
+              <string>Percentage scale</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButton_2">
+             <property name="text">
+              <string>Timing scale</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QSint::BarChartPlotter" name="BarPlot" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::ActionsContextMenu</enum>
+          </property>
+          <property name="toolTip">
+           <string notr="true"/>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>&amp;Flat Profile</string>
@@ -118,7 +173,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionOpen_Recent"/>
-    <addaction name="actionCompare"/>
+    <addaction name="actionAdditional"/>
     <addaction name="actionPrint"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -144,7 +199,13 @@
     <addaction name="actionAbout_programm"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menuSelect">
+    <property name="title">
+     <string>Select</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSelect"/>
    <addaction name="menuTools"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
@@ -160,9 +221,9 @@
     <string>Open &amp;Recent</string>
    </property>
   </action>
-  <action name="actionCompare">
+  <action name="actionAdditional">
    <property name="text">
-    <string>Co&amp;mpare With..</string>
+    <string>&amp;Additional File</string>
    </property>
   </action>
   <action name="actionPrint">
@@ -211,6 +272,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QSint::BarChartPlotter</class>
+   <extends>QWidget</extends>
+   <header location="global">../includes/barchartplotter.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

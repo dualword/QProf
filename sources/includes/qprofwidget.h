@@ -26,6 +26,7 @@
 #ifndef __QPROFWIDGET_H__
 #define __QPROFWIDGET_H__
 
+#include <QtGui>
 #include <QVector>
 #include <QList>
 #include <QString>
@@ -33,6 +34,8 @@
 #include <QLineEdit>
 #include <QPrinter>
 #include <QActionGroup>
+#include <QPaintEvent>
+#include <QTextBrowser>
 #include <QTextStream>
 #include <QDir>
 #include <QtGui/QApplication>
@@ -41,6 +44,10 @@
 #include <QTabWidget>
 #include <QUrl>
 #include <QProcess>
+
+#include "axisbase.h"
+#include "plotterbase.h"
+#include "barchartplotter.h"
 
 #include "cprofileinfo.h"
 #include "cconfigure.h"
@@ -51,6 +58,7 @@
 #include <QFile>
 class CProfileViewItem;
 
+#define MAX_ROWS 50
 
 #ifdef HAVE_LIBQTREEMAP
 class QTreeWidgetTreeMapWindow;
@@ -70,7 +78,9 @@ class CCallGraph : public QDialog, public Ui_CCallGraph
 public:
 };
 
-
+namespace Ui {
+class QProfWidget;
+}
 
 class QProfWidget : public QMainWindow, public Ui_MainWindow
 {
@@ -79,29 +89,34 @@ class QProfWidget : public QMainWindow, public Ui_MainWindow
 public:
     QFont            sListFont;  // font used to draw list entries
     static short     sLastFileFormat;    // format of the last opened file
-    static bool      sDiffMode;  // true if performing a diff. Used by CProfileViewItem
+//     static bool      sDiffMode;  // true if performing a diff. Used by CProfileViewItem
 
 protected:
     QProcess graphApplication;
     QProcess displayApplication;
     QProcess gprofApplication;
-
-    QVector<CProfileInfo>   mProfile;   // profile information read from file
-    QVector<CProfileInfo>   mPreviousProfile;   // when comparing, keep previous profile information here
-    QVector<QString>            mClasses;   // list of distinct class names found in the profile information
+    int selectedProfileNum;
+    struct profInfo {
+        QVector<CProfileInfo>   mProfile;   // profile information read from file
+//         QVector<CProfileInfo>   mPreviousProfile;   // when comparing, keep previous profile information here
+        QVector<QString>        mClasses;   // list of distinct class names found in the profile information
+    };
+    QVector<profInfo> pInfo; // for all opened files
 
     QStringList   comm_columns;
-    QStringList   comm_diff_columns;
     QStringList   prof_columns;
-    QStringList   prof_diff_columns;
     QStringList   func_columns;
-    QStringList   func_diff_columns;
     QStringList   pose_columns;
-    QStringList   pose_diff_columns;
     QStringList   recentList;
     QActionGroup* recentGroup;
+    QActionGroup* selectGroup;
     QMenu*        recentMenu;
+    QVector<CProfileViewItem*> flatItems;
+    QVector<CProfileViewItem*> hierItems;
+    QVector<CProfileViewItem*> objItems;
+//     QMenu*        selectMenu;
     QVector<QAction*> actRecentSelect;
+    QVector<QAction*> actFileSelect;
 
     QString       mGProfStdout;   // stdout from gprof command
     QString       mGProfStderr;   // stderr from gprof command
@@ -131,10 +146,11 @@ public slots:
     void settingsChanged ();
     void loadSettings ();
     void applySettings ();
+    void additionalFile ();
 
     void openResultsFile ();
-    void compareFile ();
     void openRecentFile (QAction* act);
+    void selectFile (QAction* act);
     void openCommandLineFiles ();
     void doPrint ();
 
@@ -143,6 +159,7 @@ public slots:
     void generateCallGraph ();
     void displayTreeMapView();
     void aboutQt();
+    void changeDiagram ();
     void about();
     void quit();
     void toggleTemplateAbbrev (bool state);
@@ -164,9 +181,10 @@ private:
     void initColFields();
     void createToolBars();
     int  fileDetection(const QString &fname);
-    void openFile (const QString &filename, bool compare = false);
+    void openFileList (const QStringList &filename/*, bool compare*/);
+    void openFile (const QString &filename/*, bool compare = false*/);
     void prepareProfileView (QTreeWidget *view, bool rootIsDecorated, short profiler);
-    void postProcessProfile (bool compare);
+    void postProcessProfile ();
     void prepareHtmlPart(QTextBrowser* part);
     bool parseArguments(const QStringList &args, QString& fileName);
     void addRecentFile (const QUrl&);
@@ -176,6 +194,7 @@ private:
     void fillHierProfileList ();
     void fillHierarchy (CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count);
     void fillObjsProfileList ();
+    void fillOverviewProfileList (const QStringList &fnames);
 
 //         void selectProfileItem (CProfileInfo *info);
     void selectItemInView (QTreeWidgetItem *view, CProfileInfo *info, bool examineSubs);
@@ -186,6 +205,15 @@ private:
 
     QString processName;
     CConfigure* mColorConfigure;
+
+// protected:
+//     void paintEvent(QPaintEvent *event);
+
+private:
+    QStringList filelist;
+    bool percentDiag;
+    QStandardItemModel *itemModel;
+
 };
 
 #endif
