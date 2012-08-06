@@ -8,4 +8,5 @@ rm -if $(find . -name "Makefile")
 rm -ifr $(find . -name "CMakeFiles")
 
 rm ./*.cmake
+rm ./build/* -R
 rm ./CMakeCache.txt

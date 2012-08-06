@@ -599,7 +599,6 @@ void QProfWidget::openResultsFile ()
     if ( cnt >= 1) {
         fl = fd.selectedFiles();
         fl.sort();
-//         filelist = fl;
         openFileList(fl);
     }
 
@@ -695,7 +694,7 @@ void QProfWidget::createToolBars()
                                     "and only show the functions/methods whose name match the text."));
 
     filterToolBar->addWidget(lab);
-//     filterToolBar->addWidget (new QSpacer(10, 10));
+    
     QAction *action = filterToolBar->addWidget(flatFilter);
 
     connect (flatFilter, SIGNAL (textChanged (const QString &)), this, SLOT (flatProfileFilterChanged (const QString &)));
@@ -709,30 +708,12 @@ void QProfWidget::additionalFiles ()
     fd.setOption(QFileDialog::DontUseNativeDialog, true);
 
     fd.exec();
-    QStringList fl;
-    int cnt = fd.selectedFiles().count();
-
-   
-
-    if ( cnt >= 1) {
-        fl = fd.selectedFiles();
-        for (int i=0; i<fl.count();){
-            QString filename = fl.at(i);
-            if(filelist.indexOf(filename) != -1){
-                fl.removeAt(i);
-                continue;
-            }
-            i++;
-        }
-    }
+    QStringList fl = fd.selectedFiles();
     
     if (fl.count() > 0){
-        int sum = fl.count() + filelist.count();
         openFileList(fl);
-//         filelist << fl;
         rebuildSelectGroup();
     }
-//     fillOverviewProfileList(filelist);
 }
 
 
@@ -772,155 +753,54 @@ void QProfWidget::openFile (const QString &filename)
         return;
     }
 
+    if(filelist.indexOf(filename) != -1){ // exists
+        return;
+    }
+    
+
     format = sLastFileFormat;
 
     // if the file is an executable file, generate the profiling information
     // directly from gprof and the gmon.out file
     QFileInfo finfo (filename);
     
-#if 0
-    if (finfo.isExecutable ()) {
-        isExec = true;
-
-        // prepare the "gmon.out" filename
-        QString outfile = finfo.dir().absolutePath() + "/gmon.out";
-        QFileInfo gmonfinfo (outfile);
-
-        if (!gmonfinfo.exists ()) {
-            outfile = finfo.dir().absolutePath() + "/fnccheck.out";
-            QFileInfo fnccheckinfo (outfile);
-
-            if (!fnccheckinfo.exists ()) {
-                QMessageBox::critical (this, tr ("File not found"), tr ("Can't find any profiling output file\n(gmon.out or fnccheck.out)"));
-
-                return;
-            } else {
-                format = FORMAT_FNCCHECK;
-            }
-        } else {
-            format = FORMAT_GPROF;
-        }
-
-        QStringList arguments;
-        QString progName;
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert("LC_ALL", "C");
-        gprofApplication.setProcessEnvironment(env);// .in; .setEnvironment("LC_ALL", "C");
-
-        if (format == FORMAT_GPROF) {
-            // GNU gprof analysis of gmon.out file
-            // exec "gprof -b filename gmon.out"
-            QStringList arguments;
-            arguments << "-b" << filename << outfile;
-            progName = "gprof";
-            gprofApplication.setProcessEnvironment(env);
-        } else {
-            // Function Check analysis of fnccheck.out file
-            // exec "fncdump +calls -no-decoration filename"
-            progName = "fncdump";
-            arguments << "+calls" << "-no-decoration" << "-sfile" << outfile << filename;
-            gprofApplication.setProcessEnvironment(env);
-        }
-
-        mGProfStdout = "";
-        mGProfStderr = "";
-        connect (&gprofApplication, SIGNAL (receivedStdout ()), this, SLOT (gprofStdout ()));
-        connect (&gprofApplication, SIGNAL (receivedStderr ()), this, SLOT (gprofStderr ()));
-
-        gprofApplication.execute (progName, arguments);//// QProcess::Block, QProcess::AllOutput);
-
-        if (!gprofApplication.exitCode() || gprofApplication.exitStatus ()) {
-            QString text = tr ("Could not generate the profile data.\n");
-            text += ("\nFile: " + filename);
-
-            if (gprofApplication.exitCode () && gprofApplication.exitStatus ()) {
-                QString s = QString(tr("Error ") + QString::number(gprofApplication.exitCode()) + tr( " was returned.\n") );
-                text += s;
-            }
-
-            if (!mGProfStderr.isEmpty ()) {
-                text += tr ("It returned the following error message(s):\n");
-                text += mGProfStderr;
-            } else if (!mGProfStdout.isEmpty ()) {
-                text += tr ("Following output was displayed:\n");
-                text += mGProfStdout;
-
-            }
-
-            QMessageBox::critical (this, tr ("gprof exited with error(s)"), text);
-            return;
-        }
-
-        mFlat->clear ();
-        mHier->clear ();
-        mObjs->clear ();
-
-        pInfo[selectedProfileNum].mProfile.clear ();
-
-        // parse profile data
-        QTextStream t (&mGProfStdout, QIODevice::ReadOnly);
-
-        CParseProfile* profile = 0;
-
-        if (format == FORMAT_GPROF) {
-            profile = new CParseProfile_gprof(t, pInfo[selectedProfileNum].mProfile);
-        } else if (format == FORMAT_CALLGRIND) {
-            profile = new CParseProfile_callgrind(t, pInfo[selectedProfileNum].mProfile);
-        } else {
-            profile = new CParseProfile_fnccheck(t, pInfo[selectedProfileNum].mProfile);
-        }
-
-        if (!profile->valid()) {
-            QMessageBox::critical(this, tr("Error"), tr("This fnccheck file is not in the correct format"));
-
-            return;
-        }
-    } else {
-#endif
-        // if user tried to open gmon.out, have him select the executable instead, then recurse to use
-        // the executable file
-        if (finfo.fileName() == "gmon.out") {
-            QMessageBox::critical (this, tr ("Opening gmon.out not allowed"), tr ("File 'gmon.out' is the result of the execution of an application\nwith gprof(1) profiling turned on.\nYou can not open it as such: either open the application itself\nor open a text results file generated with 'gprof -b application-name'"));
-
-            return;
-        } else if (finfo.fileName() == "fnccheck.out") {
-            QMessageBox::critical (this, tr ("Opening fnccheck.out not allowed"), tr ("File 'fnccheck.out' is the result of the execution of an application\nwith Function Check profiling turned on.\nYou can not open it as such: either open the application itself\nor open a text results file generated with 'fncdump +calls application-name'"));
-
-            return;
-        }
-
-        mFlat->clear ();
-        mHier->clear ();
-        mObjs->clear ();
-
-        // if we are going to compare results, save the previous results and
-        // remove any previously deleted entry
-
-        pInfo.resize(currentpInfoSize+1);
-
-        pInfo[currentpInfoSize].mProfile.clear ();
-
-        // parse profile data
-        QFile inpf (filename);
-
-        if (!inpf.open (QIODevice::ReadOnly)) {
-            return;
-        }
-
-        QTextStream t (&inpf);
-
-        if (format == FORMAT_GPROF) {
-            CParseProfile_gprof (t, pInfo[currentpInfoSize].mProfile);
-        } else if (format == FORMAT_FNCCHECK) {
-            CParseProfile_fnccheck (t, pInfo[currentpInfoSize].mProfile);
-        } else if (format == FORMAT_CALLGRIND) {
-            CParseProfile_callgrind (t, pInfo[currentpInfoSize].mProfile);
-        } else {
-            CParseProfile_pose (t, pInfo[currentpInfoSize].mProfile);
-        }
-#if 0
+    // if user tried to open gmon.out, have him select the executable instead, then recurse to use
+    // the executable file
+    if (format != FORMAT_GPROF && format != FORMAT_FNCCHECK && format != FORMAT_CALLGRIND ) {
+        QMessageBox::critical (this, tr ("Opening of file not allowed"), tr ("This file is in binary format\nPlease convert the file in text format\n"));
+        return;
     }
-#endif
+
+    mFlat->clear ();
+    mHier->clear ();
+    mObjs->clear ();
+
+    // if we are going to compare results, save the previous results and
+    // remove any previously deleted entry
+
+    pInfo.resize(currentpInfoSize+1);
+
+    pInfo[currentpInfoSize].mProfile.clear ();
+
+    // parse profile data
+    QFile inpf (filename);
+
+    if (!inpf.open (QIODevice::ReadOnly)) {
+        return;
+    }
+
+    QTextStream t (&inpf);
+
+    if (format == FORMAT_GPROF) {
+        CParseProfile_gprof (t, pInfo[currentpInfoSize].mProfile);
+    } else if (format == FORMAT_FNCCHECK) {
+        CParseProfile_fnccheck (t, pInfo[currentpInfoSize].mProfile);
+    } else if (format == FORMAT_CALLGRIND) {
+        CParseProfile_callgrind (t, pInfo[currentpInfoSize].mProfile);
+    } else {
+        CParseProfile_pose (t, pInfo[currentpInfoSize].mProfile);
+    }
+
 
     filelist << filename;
 
@@ -931,7 +811,6 @@ void QProfWidget::openFile (const QString &filename)
     prepareProfileView (mHier, true, sLastFileFormat);
     prepareProfileView (mObjs, true, sLastFileFormat);
 
-#if 1
     prepareHtmlPart(mCallTree);
 
     //For the time being dump all the method html
@@ -939,7 +818,7 @@ void QProfWidget::openFile (const QString &filename)
     for (unsigned int i = 0; i < pInfo[currentpInfoSize].mProfile.size (); i++) {
         (pInfo[currentpInfoSize].mProfile[i]).dumpHtml(processName);
     }
-#endif
+
     // fill lists
     selectedProfileNum = currentpInfoSize;
     
