@@ -274,7 +274,7 @@ int QProfWidget::fileDetection(const QString &fname)
     file.close();
 
     // is it Executable Linux Format?
-    if (ba[1] == 'E' && ba[2] == 'L' && ba[3] == 'F'){
+    if (ba[1] == 'E' && ba[2] == 'L' && ba[3] == 'F') {
         return FORMAT_ELF;
     }
 
@@ -329,7 +329,7 @@ void QProfWidget::toggleTemplateAbbrev (bool stste)
 {
     mAbbrevTemplates = stste;// mAbbrevTemplates ? false : true;
     actionAbbreviate_C_Templates->setChecked (mAbbrevTemplates);
-    
+
     if(pInfo.size() == 0)
         return;
 
@@ -529,13 +529,14 @@ void QProfWidget::selectFile (QAction* act)
     selectedProfileNum = 0;
 
     for(num = 0; num < actFileSelect.count(); ++num) {
-        if (actFileSelect.at(num)->text() == tmpStr) {
-            actFileSelect.at(num)->setChecked(true);
+        if (actFileSelect.at(num)->isChecked() == true) {
+//             actFileSelect.at(num)->setChecked(true);
             selectedProfileNum = num;
             break;
         }
     }
 
+//     qDebug() << "triggered" << selectedProfileNum << num;
     mFlat->clear ();
     mHier->clear ();
     mObjs->clear ();
@@ -609,11 +610,6 @@ void QProfWidget::rebuildSelectGroup()
     actionOpen_Recent->setMenu(menuSelect);
 
     connect (selectGroup, SIGNAL (triggered(QAction*)), this, SLOT (selectFile(QAction*)));
-
-    if (filelist.count() > 0) {
-        selectedProfileNum = 0;
-        selectGroup->actions().at(0)->setChecked(true);
-    }
 }
 
 void QProfWidget::openCommandLineFiles ()
@@ -672,7 +668,7 @@ void QProfWidget::createToolBars()
                                     "and only show the functions/methods whose name match the text."));
 
     filterToolBar->addWidget(lab);
-    
+
     QAction *action = filterToolBar->addWidget(flatFilter);
 
     connect (flatFilter, SIGNAL (textChanged (const QString &)), this, SLOT (flatProfileFilterChanged (const QString &)));
@@ -681,15 +677,21 @@ void QProfWidget::createToolBars()
 
 void QProfWidget::openDialogFile ()
 {
+    int addPos = 0;
     // customize the Open File dialog: we add
     // a few widgets at the end which allow the user
     // to give us a hint at which profiler the results
     // file comes from (GNU gprof, Function Check, Palm OS Emulator)
-    if (filelist.count() > 0){
-        if (QMessageBox::question(this, "Clean", "Do you want to clean the existing list?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+    if (filelist.count() > 0) {
+        if (QMessageBox::question(this, "Clean", "Do you want to clean the existing list?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes) {
+            selectedProfileNum = 0;
+            filelist.clear();
             pInfo.resize(0);
+        }
+        else
+            addPos = pInfo.size();
     }
-    
+
     QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
     fd.setFileMode(QFileDialog::ExistingFiles);
     fd.setOption(QFileDialog::DontUseNativeDialog, true);
@@ -705,6 +707,13 @@ void QProfWidget::openDialogFile ()
     }
 
     rebuildSelectGroup();
+
+    if (filelist.count() > 0) {
+        selectedProfileNum = addPos;
+        selectGroup->actions().at(addPos)->setChecked (true);
+        
+        emit selectFile(selectGroup->actions().at(addPos));
+    }
 }
 
 
@@ -716,10 +725,16 @@ void QProfWidget::additionalFiles ()
 
     fd.exec();
     QStringList fl = fd.selectedFiles();
-    
-    if (fl.count() > 0){
+    int pos = filelist.count();
+
+    if (fl.count() > 0) {
         openFileList(fl);
         rebuildSelectGroup();
+        
+        selectedProfileNum = pos;
+        selectGroup->actions().at(pos)->setChecked(true);
+
+        emit selectFile(selectGroup->actions().at(pos));
     }
 }
 
@@ -760,17 +775,17 @@ void QProfWidget::openFile (const QString &filename)
         return;
     }
 
-    if(filelist.indexOf(filename) != -1){ // exists
+    if(filelist.indexOf(filename) != -1) { // exists
         return;
     }
-    
+
 
     format = sLastFileFormat;
 
     // if the file is an executable file, generate the profiling information
     // directly from gprof and the gmon.out file
     QFileInfo finfo (filename);
-    
+
     // if user tried to open gmon.out, have him select the executable instead, then recurse to use
     // the executable file
     if (format != FORMAT_GPROF && format != FORMAT_FNCCHECK && format != FORMAT_CALLGRIND ) {
@@ -828,7 +843,7 @@ void QProfWidget::openFile (const QString &filename)
 
     // fill lists
     selectedProfileNum = currentpInfoSize;
-    
+
     fillFlatProfileList ();
     fillHierProfileList ();
     fillObjsProfileList ();
@@ -836,7 +851,7 @@ void QProfWidget::openFile (const QString &filename)
     // make sure we add the recent file (this also changes the window title)
     QUrl url (filename);
     QString schem;
-    
+
     if (isExec == true )
         schem = "file";
     else if (sLastFileFormat == FORMAT_GPROF)
@@ -1127,7 +1142,7 @@ void QProfWidget::fillOverviewProfileList ()
     bg.setColorAt(0.5, QColor(0xccccff));
     bg.setColorAt(0, Qt::white);
     mBarPlot->setBackground(QBrush(bg));
-    
+
     QStringList names;
     names = filelist;
     for (QStringList::iterator in=names.begin(); in!= names.end(); ++in) {
