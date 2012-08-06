@@ -143,7 +143,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     actionQuit->setIcon(QIcon::fromTheme("application-exit"));
     actionOpen_Recent->setIcon(QIcon::fromTheme("document-open-recent"));
 
-    connect (actionOpen, SIGNAL (triggered ()), this, SLOT (openResultsFile ()));
+    connect (actionOpen, SIGNAL (triggered ()), this, SLOT (openDialogFile ()));
     connect (actionQuit, SIGNAL (triggered ()), this, SLOT (quit ()));
 //     connect (actionOpen_Recent, SIGNAL (triggered()), this, SLOT (openRecentFile()));
 
@@ -582,28 +582,6 @@ void QProfWidget::openRecentFile (QAction* act)
 }
 
 
-void QProfWidget::openResultsFile ()
-{
-    // customize the Open File dialog: we add
-    // a few widgets at the end which allow the user
-    // to give us a hint at which profiler the results
-    // file comes from (GNU gprof, Function Check, Palm OS Emulator)
-    QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
-    fd.setFileMode(QFileDialog::ExistingFiles);
-    fd.setOption(QFileDialog::DontUseNativeDialog, true);
-
-    fd.exec();
-    QStringList fl;
-    int cnt = fd.selectedFiles().count();
-
-    if ( cnt >= 1) {
-        fl = fd.selectedFiles();
-        fl.sort();
-        openFileList(fl);
-    }
-
-    rebuildSelectGroup();
-}
 
 void QProfWidget::rebuildSelectGroup()
 {
@@ -701,9 +679,38 @@ void QProfWidget::createToolBars()
 }
 
 
+void QProfWidget::openDialogFile ()
+{
+    // customize the Open File dialog: we add
+    // a few widgets at the end which allow the user
+    // to give us a hint at which profiler the results
+    // file comes from (GNU gprof, Function Check, Palm OS Emulator)
+    if (filelist.count() > 0){
+        if (QMessageBox::question(this, "Clean", "Do you want to clean the existing list?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+            pInfo.resize(0);
+    }
+    
+    QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
+    fd.setFileMode(QFileDialog::ExistingFiles);
+    fd.setOption(QFileDialog::DontUseNativeDialog, true);
+
+    fd.exec();
+    QStringList fl;
+    int cnt = fd.selectedFiles().count();
+
+    if ( cnt >= 1) {
+        fl = fd.selectedFiles();
+        fl.sort();
+        openFileList(fl);
+    }
+
+    rebuildSelectGroup();
+}
+
+
 void QProfWidget::additionalFiles ()
 {
-    QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
+    QFileDialog fd (this, tr ("Select a profiling results file(s) for adding"), mCurDir.absolutePath());
     fd.setFileMode(QFileDialog::ExistingFiles);
     fd.setOption(QFileDialog::DontUseNativeDialog, true);
 

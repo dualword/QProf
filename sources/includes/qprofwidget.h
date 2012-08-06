@@ -149,7 +149,7 @@ public slots:
     void applySettings ();
     void additionalFiles ();
 
-    void openResultsFile ();
+    void openDialogFile ();
     void openRecentFile (QAction* act);
     void selectFile (QAction* act);
     void openCommandLineFiles ();
