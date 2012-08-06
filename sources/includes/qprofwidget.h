@@ -69,6 +69,7 @@ class QTreeMapOptions;
 #define FORMAT_FNCCHECK    2            // Function Check
 #define FORMAT_POSE        3            // PalmOS Emulator
 #define FORMAT_CALLGRIND   4            // Callgrind
+#define FORMAT_ELF         32           // linux elf format
 
 
 class CCallGraph : public QDialog, public Ui_CCallGraph
@@ -146,7 +147,7 @@ public slots:
     void settingsChanged ();
     void loadSettings ();
     void applySettings ();
-    void additionalFile ();
+    void additionalFiles ();
 
     void openResultsFile ();
     void openRecentFile (QAction* act);
@@ -180,6 +181,7 @@ protected slots:
 private:
     void initColFields();
     void createToolBars();
+    void rebuildSelectGroup();
     int  fileDetection(const QString &fname);
     void openFileList (const QStringList &filename/*, bool compare*/);
     void openFile (const QString &filename/*, bool compare = false*/);
@@ -194,7 +196,7 @@ private:
     void fillHierProfileList ();
     void fillHierarchy (CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count);
     void fillObjsProfileList ();
-    void fillOverviewProfileList (const QStringList &fnames);
+    void fillOverviewProfileList ();
 
 //         void selectProfileItem (CProfileInfo *info);
     void selectItemInView (QTreeWidgetItem *view, CProfileInfo *info, bool examineSubs);

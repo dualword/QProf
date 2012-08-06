@@ -136,7 +136,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     actionPrint->setIcon(QIcon::fromTheme("printer"));
 
     selectedProfileNum = 0;
-    pInfo.resize(1);
+    pInfo.resize(0);
 
     percentDiag = true;
 
@@ -148,7 +148,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 //     connect (actionOpen_Recent, SIGNAL (triggered()), this, SLOT (openRecentFile()));
 
 //      (*actionCompare).setDisabled(true);
-    connect (actionAdditional, SIGNAL (triggered ()), this, SLOT (additionalFile ()));
+    connect (actionAdditional, SIGNAL (triggered ()), this, SLOT (additionalFiles ()));
 
     connect (action_Generate_Call_Graph, SIGNAL (triggered ()), this, SLOT (generateCallGraph ()));
 
@@ -202,6 +202,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     mCallTree->setWhatsThis(tr ("This is a graphical representation of the call tree. Click on methods"
                                 "to display them on the methods tab."));
     mMethod->setWhatsThis(tr ("This is a clickable view of the method selected in the Graph view"));
+    mBarPlot->setWhatsThis(tr ("This is a overview page of loaded files"));
 
     createToolBars();
 
@@ -213,7 +214,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
 
     filelist.clear();
 
-    fillOverviewProfileList (filelist);
+    fillOverviewProfileList ();
 }
 
 
@@ -251,7 +252,7 @@ void QProfWidget::changeDiagram()
         percentDiag = false;
 
 //     qDebug() << "change" << percentDiag;
-    fillOverviewProfileList (filelist);
+    fillOverviewProfileList ();
 }
 
 
@@ -271,6 +272,11 @@ int QProfWidget::fileDetection(const QString &fname)
     QDataStream in(&file);    // read the data serialized from the file
     in.readRawData(ba, 512);
     file.close();
+
+    // is it Executable Linux Format?
+    if (ba[1] == 'E' && ba[2] == 'L' && ba[3] == 'F'){
+        return FORMAT_ELF;
+    }
 
     for (int i=0; i<128; i++) {
         if ( ba[i] == 0x0 || ba[i] > 0x7f) {
@@ -323,6 +329,9 @@ void QProfWidget::toggleTemplateAbbrev (bool stste)
 {
     mAbbrevTemplates = stste;// mAbbrevTemplates ? false : true;
     actionAbbreviate_C_Templates->setChecked (mAbbrevTemplates);
+    
+    if(pInfo.size() == 0)
+        return;
 
     if (pInfo[selectedProfileNum].mProfile.count ()) {
         postProcessProfile (); // regenerate simplified names
@@ -358,7 +367,6 @@ void QProfWidget::configure()
 {
     mColorConfigure->chooseGraphHighColour();
 }
-
 
 
 //Captures the URL clicked signal from the call tree HTML widget and
@@ -418,7 +426,7 @@ void QProfWidget::settingsChanged ()
 
 void QProfWidget::applySettings ()
 {
-    QSettings settings("KarboSoft", "QProfiler");
+    QSettings settings("KarboSoft", "QProf");
 
     settings.setValue ("AbbreviateTemplates", mAbbrevTemplates);
     settings.setValue  ("FontName", sListFont.family());
@@ -439,7 +447,7 @@ void QProfWidget::applySettings ()
 
 void QProfWidget::loadSettings ()
 {
-    QSettings settings("KarboSoft", "QProfiler");
+    QSettings settings("KarboSoft", "QProf");
 
     //Load settings for C++ Templates
     mAbbrevTemplates = settings.value ("AbbreviateTemplates", true).toBool();
@@ -588,24 +596,18 @@ void QProfWidget::openResultsFile ()
     QStringList fl;
     int cnt = fd.selectedFiles().count();
 
-    pInfo.resize(fd.selectedFiles().count());
-
-    if ( cnt > 1) {
+    if ( cnt >= 1) {
         fl = fd.selectedFiles();
         fl.sort();
-        filelist = fl;
+//         filelist = fl;
         openFileList(fl);
     }
-    else {
-        QString filename = fd.selectedFiles().at(0);//.selectedFile();
-        fl << filename;
-        filelist = fl;
-        if (!filename.isEmpty()) {
-            //open the file
-            openFile (filename);
-        }
-    }
 
+    rebuildSelectGroup();
+}
+
+void QProfWidget::rebuildSelectGroup()
+{
     disconnect (selectGroup, SIGNAL (triggered(QAction*)), this, SLOT (selectFile(QAction*)));
     actFileSelect.clear();
 
@@ -614,9 +616,9 @@ void QProfWidget::openResultsFile ()
     delete selectGroup;
     selectGroup = new QActionGroup(this);
 
-    for (int i = 0; i < fl.count(); ++i) {
+    for (int i = 0; i < filelist.count(); ++i) {
         QString name;
-        name = fl.at(i);
+        name = filelist.at(i);
 
         QAction *tmpAction = new QAction(name, selectGroup);
         selectGroup->addAction(tmpAction);
@@ -631,7 +633,7 @@ void QProfWidget::openResultsFile ()
 
     connect (selectGroup, SIGNAL (triggered(QAction*)), this, SLOT (selectFile(QAction*)));
 
-    if (fl.count() > 0) {
+    if (filelist.count() > 0) {
         selectedProfileNum = 0;
         selectGroup->actions().at(0)->setChecked(true);
     }
@@ -675,6 +677,7 @@ bool QProfWidget::parseArguments(const QStringList & args, QString& fileName)
     return success;
 }
 
+
 void QProfWidget::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
@@ -698,7 +701,42 @@ void QProfWidget::createToolBars()
     connect (flatFilter, SIGNAL (textChanged (const QString &)), this, SLOT (flatProfileFilterChanged (const QString &)));
 }
 
-void QProfWidget::openFileList (const QStringList &filenames/*, bool compare*/)
+
+void QProfWidget::additionalFiles ()
+{
+    QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
+    fd.setFileMode(QFileDialog::ExistingFiles);
+    fd.setOption(QFileDialog::DontUseNativeDialog, true);
+
+    fd.exec();
+    QStringList fl;
+    int cnt = fd.selectedFiles().count();
+
+   
+
+    if ( cnt >= 1) {
+        fl = fd.selectedFiles();
+        for (int i=0; i<fl.count();){
+            QString filename = fl.at(i);
+            if(filelist.indexOf(filename) != -1){
+                fl.removeAt(i);
+                continue;
+            }
+            i++;
+        }
+    }
+    
+    if (fl.count() > 0){
+        int sum = fl.count() + filelist.count();
+        openFileList(fl);
+//         filelist << fl;
+        rebuildSelectGroup();
+    }
+//     fillOverviewProfileList(filelist);
+}
+
+
+void QProfWidget::openFileList (const QStringList &filenames)
 {
     int sz = filenames.count();
 
@@ -709,12 +747,13 @@ void QProfWidget::openFileList (const QStringList &filenames/*, bool compare*/)
 
     selectedProfileNum = 0;
 
-    fillOverviewProfileList(filenames);
+    fillOverviewProfileList();
 }
 
 void QProfWidget::openFile (const QString &filename)
 {
     bool isExec = false;
+    int currentpInfoSize = pInfo.size();
     short format;
 
     if (filename.isEmpty ()) {
@@ -728,12 +767,18 @@ void QProfWidget::openFile (const QString &filename)
         return;
     }
 
+    if (sLastFileFormat == FORMAT_ELF) {
+        QMessageBox::critical (this, tr ("File is ELF"), tr ("Wrong file was selected\nDetected ELF binary"));
+        return;
+    }
+
     format = sLastFileFormat;
 
     // if the file is an executable file, generate the profiling information
     // directly from gprof and the gmon.out file
     QFileInfo finfo (filename);
-
+    
+#if 0
     if (finfo.isExecutable ()) {
         isExec = true;
 
@@ -831,6 +876,7 @@ void QProfWidget::openFile (const QString &filename)
             return;
         }
     } else {
+#endif
         // if user tried to open gmon.out, have him select the executable instead, then recurse to use
         // the executable file
         if (finfo.fileName() == "gmon.out") {
@@ -850,7 +896,9 @@ void QProfWidget::openFile (const QString &filename)
         // if we are going to compare results, save the previous results and
         // remove any previously deleted entry
 
-        pInfo[selectedProfileNum].mProfile.clear ();
+        pInfo.resize(currentpInfoSize+1);
+
+        pInfo[currentpInfoSize].mProfile.clear ();
 
         // parse profile data
         QFile inpf (filename);
@@ -862,16 +910,19 @@ void QProfWidget::openFile (const QString &filename)
         QTextStream t (&inpf);
 
         if (format == FORMAT_GPROF) {
-            CParseProfile_gprof (t, pInfo[selectedProfileNum].mProfile);
+            CParseProfile_gprof (t, pInfo[currentpInfoSize].mProfile);
         } else if (format == FORMAT_FNCCHECK) {
-            CParseProfile_fnccheck (t, pInfo[selectedProfileNum].mProfile);
+            CParseProfile_fnccheck (t, pInfo[currentpInfoSize].mProfile);
         } else if (format == FORMAT_CALLGRIND) {
-            CParseProfile_callgrind (t, pInfo[selectedProfileNum].mProfile);
+            CParseProfile_callgrind (t, pInfo[currentpInfoSize].mProfile);
         } else {
-            CParseProfile_pose (t, pInfo[selectedProfileNum].mProfile);
+            CParseProfile_pose (t, pInfo[currentpInfoSize].mProfile);
         }
-
+#if 0
     }
+#endif
+
+    filelist << filename;
 
     // post-process the parsed data
     postProcessProfile ();
@@ -885,11 +936,13 @@ void QProfWidget::openFile (const QString &filename)
 
     //For the time being dump all the method html
     //files to the tmp directory.
-    for (unsigned int i = 0; i < pInfo[selectedProfileNum].mProfile.size (); i++) {
-        (pInfo[selectedProfileNum].mProfile[i]).dumpHtml(processName);
+    for (unsigned int i = 0; i < pInfo[currentpInfoSize].mProfile.size (); i++) {
+        (pInfo[currentpInfoSize].mProfile[i]).dumpHtml(processName);
     }
 #endif
     // fill lists
+    selectedProfileNum = currentpInfoSize;
+    
     fillFlatProfileList ();
     fillHierProfileList ();
     fillObjsProfileList ();
@@ -897,6 +950,7 @@ void QProfWidget::openFile (const QString &filename)
     // make sure we add the recent file (this also changes the window title)
     QUrl url (filename);
     QString schem;
+    
     if (isExec == true )
         schem = "file";
     else if (sLastFileFormat == FORMAT_GPROF)
@@ -975,6 +1029,8 @@ void QProfWidget::postProcessProfile ()
     // After that, we check every function/method to see if it
     // has multiple signatures. We mark entries with multiple signatures
     // so that we can display the arguments only when needed
+    if (pInfo.size() == 0)
+        return;
 
     pInfo[selectedProfileNum].mClasses.resize (0);
     uint i, j;
@@ -1156,37 +1212,38 @@ void QProfWidget::fillObjsProfileList ()
 }
 
 
-void QProfWidget::fillOverviewProfileList (const QStringList &fnames)
+void QProfWidget::fillOverviewProfileList ()
 {
-    int fCount = fnames.count();
-    BarPlot->axisY()->setRanges(0, 100);
-    BarPlot->axisY()->setTicks(2, 10);
-    BarPlot->axisY()->setPen(QPen(Qt::darkGray));
-    BarPlot->axisY()->setMinorTicksPen(QPen(Qt::gray));
-    BarPlot->axisY()->setMajorTicksPen(QPen(Qt::darkGray));
-    //BarPlot->axisY()->setMinorGridPen(QPen(Qt::gray));
-    BarPlot->axisY()->setMajorGridPen(QPen(Qt::lightGray));
-    BarPlot->axisY()->setTextColor(Qt::black);
+    int fCount = filelist.count();
+    mBarPlot->axisY()->setRanges(0, 100);
+    mBarPlot->axisY()->setTicks(2, 10);
+    mBarPlot->axisY()->setPen(QPen(Qt::darkGray));
+    mBarPlot->axisY()->setMinorTicksPen(QPen(Qt::gray));
+    mBarPlot->axisY()->setMajorTicksPen(QPen(Qt::darkGray));
+    //mBarPlot->axisY()->setMinorGridPen(QPen(Qt::gray));
+    mBarPlot->axisY()->setMajorGridPen(QPen(Qt::lightGray));
+    mBarPlot->axisY()->setTextColor(Qt::black);
 
-    BarPlot->axisX()->setPen(QPen(Qt::darkGray));
-    BarPlot->axisX()->setMinorTicksPen(QPen(Qt::gray));
-    BarPlot->axisX()->setMajorTicksPen(QPen(Qt::darkGray));
-    BarPlot->axisX()->setMajorGridPen(QPen(Qt::lightGray));
-    BarPlot->axisX()->setTextColor(Qt::black);
+    mBarPlot->axisX()->setPen(QPen(Qt::darkGray));
+    mBarPlot->axisX()->setMinorTicksPen(QPen(Qt::gray));
+    mBarPlot->axisX()->setMajorTicksPen(QPen(Qt::darkGray));
+    mBarPlot->axisX()->setMajorGridPen(QPen(Qt::lightGray));
+    mBarPlot->axisX()->setTextColor(Qt::black);
 
-    BarPlot->setBarSize(32, 128);
-    BarPlot->setBarOpacity(0.5);
-// BarPlot->setAlternatingRowColors(true);
-//     BarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    mBarPlot->setBarSize(32, 128);
+    mBarPlot->setBarOpacity(0.5);
+// mBarPlot->setAlternatingRowColors(true);
+//     mBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QLinearGradient bg(0,0,0,1);
     bg.setCoordinateMode(QGradient::ObjectBoundingMode);
     bg.setColorAt(1, Qt::white);
     bg.setColorAt(0.5, QColor(0xccccff));
     bg.setColorAt(0, Qt::white);
-    BarPlot->setBackground(QBrush(bg));
+    mBarPlot->setBackground(QBrush(bg));
+    
     QStringList names;
-    names = fnames;
+    names = filelist;
     for (QStringList::iterator in=names.begin(); in!= names.end(); ++in) {
         int pos;
         pos = (*in).lastIndexOf("/"); // short form name
@@ -1293,14 +1350,14 @@ void QProfWidget::fillOverviewProfileList (const QStringList &fnames)
         }
 
         if (percentDiag == false) {
-            BarPlot->axisY()->setRanges(0, maxVal);
-            BarPlot->setBarScale(0.5);
+            mBarPlot->axisY()->setRanges(0, maxVal);
+            mBarPlot->setBarScale(0.5);
         }
-        BarPlot->setModel(itemModel);
+        mBarPlot->setModel(itemModel);
     }
 
-    BarPlot->setBarType(QSint::BarChartPlotter::Stacked);
-    BarPlot->repaint();
+    mBarPlot->setBarType(QSint::BarChartPlotter::Stacked);
+    mBarPlot->repaint();
 }
 
 void QProfWidget::profileEntryRightClick (const QPoint & iPoint)
@@ -1512,10 +1569,6 @@ void QProfWidget::doPrint ()
     part->print(&printer);
 
     delete part;
-}
-
-void QProfWidget::additionalFile ()
-{
 }
 
 void QProfWidget::generateCallGraph ()
