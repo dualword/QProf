@@ -22,7 +22,6 @@ public:
         return m_type;
     }
 
-
     void setBarSize(int min, int max = INT_MAX);
     inline int barSizeMin() const {
         return m_barsize_min;
@@ -43,7 +42,7 @@ public:
 
 protected:
     virtual void drawContent(QPainter &p);
-    virtual void toolTipBarItem(const QModelIndex &index, const QString& value);
+    virtual bool indexAt(const QPoint &p, QModelIndex &index );
     virtual void drawBarItem(QPainter &p, QRect rect,
                              QPen &pen, QBrush &brush,
                              const QModelIndex &index,

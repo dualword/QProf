@@ -23,17 +23,17 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  *
- * 
+ *
  *            Information about version changes. Developer of project E. Kalinowski
  *
  * 0.9.0      06 jul 2012    first release. complete ported from kprof project
  * 0.9.4      12 jul 2012    debug fixing, autodetection of file format: callgrind, gprof, funccheck
  * 1.0.0      06 aug 2012    overview page added, removed "compare" functionality, select of file.
  *                           loading of multoply files, autodetection of ELF format, if executable
- * 1.1.0      __ aug 2012    scaling for seconds enabled, overview page
+ * 1.1.0      07 aug 2012    scaling for seconds enabled, overview page
  *                           ToolTip information on overview page for displaying of function/method names
  * 1.2.0      __ aug 2012    onClick added to select on overview page
- * 
+ *
  */
 
 #include <cstdlib>

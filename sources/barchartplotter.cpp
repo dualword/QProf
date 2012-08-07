@@ -91,17 +91,12 @@ void BarChartPlotter::drawContent(QPainter &p)
 
             for (int j = 0; j < row_count; j++) {
                 const QModelIndex index(m_model->index(j, i));
-//                 QPen pen(qvariant_cast<QColor>(m_model->headerData(j, Qt::Vertical, Qt::ForegroundRole)));
-//                 QBrush brush(qvariant_cast<QBrush>(m_model->headerData(j, Qt::Vertical, Qt::BackgroundRole)));
+
                 QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
                 QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
 
-//                 if (m_model->data(index, Qt::ToolTipRole).toString().length() != 0){
-//                     qDebug() << "tooltip found" << m_model->data(index, Qt::ToolTipRole).toString();
-//                 }
-
                 double value = m_model->data(index).toDouble();
-//                 QString tooltip = index.data().
+
                 if (value < 0) {
                     neg_value += value;
 
@@ -142,11 +137,6 @@ void BarChartPlotter::drawContent(QPainter &p)
                 const QModelIndex index(m_model->index(j, i));
                 QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
                 QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
-//                 QBrush brush(qvariant_cast<QBrush>(m_model->headerData(j, Qt::Vertical, Qt::BackgroundRole)));
-                /*
-                                if (m_model->data(index, Qt::ToolTipRole).toString().length() != 0){
-                                   qDebug() << "tooltip found" << m_model->data(index, Qt::ToolTipRole).toString();
-                                }*/
 
                 double value = m_model->data(index).toDouble();
 
@@ -169,10 +159,130 @@ void BarChartPlotter::drawContent(QPainter &p)
     } // switch
 }
 
-void BarChartPlotter::toolTipBarItem(const QModelIndex &index, const QString& value)
+
+
+bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
 {
-//     index.setToolTip(value);
-//     p.setToolTip(
+    if (!m_model || !m_axisX || !m_axisY)
+        return false;
+
+    int p_start, p_end;
+    m_axisX->calculatePoints(p_start, p_end);
+
+    int p_y = m_axisY->toView(0);
+
+    int count = m_model->columnCount();
+    if (!count)
+        return false;
+
+    int row_count = m_model->rowCount();
+    if (!row_count)
+        return false;
+
+    int p_offs = double(p_end - p_start) / count;
+
+    int bar_size = p_offs * m_scale;
+
+    if (bar_size > m_barsize_max)
+        bar_size = qMin(m_barsize_max, p_offs);
+    else if (bar_size < m_barsize_min)
+        bar_size = qMin(m_barsize_min, p_offs);
+
+
+
+    switch (m_type) {
+    case Stacked:
+
+        for (int i = 0; i < count; i++) {
+            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+
+            double acc_value = 0;
+            int p_y = m_axisY->toView(0);
+
+            double neg_value = 0;
+            int p_ny = p_y;
+
+            for (int j = 0; j < row_count; j++) {
+                const QModelIndex index(m_model->index(j, i));
+                QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
+                QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
+
+                double value = m_model->data(index).toDouble();
+
+                if (value < 0) {
+                    neg_value += value;
+
+                    int p_h = m_axisY->toView(neg_value);
+
+                    QRect r(p_d, p_ny, bar_size, p_h-p_ny);
+                    if (r.contains(p) == true) {
+                        idx = index;
+                        return true;
+                    }
+
+                    p_ny = p_h;
+                }
+                else {
+                    acc_value += value;
+
+                    int p_h = m_axisY->toView(acc_value);
+                    QRect r(p_d, p_h, bar_size, p_y-p_h);
+                    if (r.contains(p) == true) {
+                        idx = index;
+                        return true;
+                    }
+
+                    p_y = p_h;
+                }
+            }
+        }
+
+        break;
+
+    case Columns:
+    {
+        int single_bar_size = bar_size/row_count;
+        if (!single_bar_size)
+            return false;
+
+        for (int i = 0; i < count; i++) {
+            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+
+            int p_y = m_axisY->toView(0);
+
+            for (int j = 0; j < row_count; j++) {
+                const QModelIndex index(m_model->index(j, i));
+                QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
+                QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
+
+                double value = m_model->data(index).toDouble();
+
+                int p_h = m_axisY->toView(value);
+
+                if (value < 0) {
+                    QRect r(p_d, p_y, single_bar_size, p_h-p_y);
+                    if (r.contains(p) == true) {
+                        idx = index;
+                        return true;
+                    }
+                }
+                else {
+                    QRect r(p_d, p_h, single_bar_size, p_y-p_h);
+                    if (r.contains(p) == true) {
+                        idx = index;
+                        return true;
+                    }
+                }
+
+                p_d += single_bar_size;
+            }
+        }
+
+        break;
+    } // Nearby
+
+    } // switch
+    return false;
 }
 
 void BarChartPlotter::drawBarItem(QPainter &p, QRect rect, QPen &pen, QBrush &brush,

@@ -56,17 +56,12 @@ public slots:
 
 protected:
     virtual void paintEvent(QPaintEvent *);
-//     virtual void mouseMoveEvent( QMouseEvent* );
-//     virtual bool event(QEvent *event);
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
-
-//     virtual void showEvent(QShowEvent *event);
+    virtual bool event(QEvent *event);
     virtual void drawBackground(QPainter &p);
     virtual void drawForeground(QPainter &p);
     virtual void drawAxis(QPainter &p);
     virtual void drawContent(QPainter &p) = 0;
+    virtual bool indexAt(const QPoint &p, QModelIndex &index ) = 0;
 
     AxisBase *m_axisX;
     AxisBase *m_axisY;

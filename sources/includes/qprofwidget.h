@@ -208,9 +208,6 @@ private:
     QString processName;
     CConfigure* mColorConfigure;
 
-// protected:
-//     void paintEvent(QPaintEvent *event);
-
 private:
     QStringList filelist;
     bool percentDiag;
