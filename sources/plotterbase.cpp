@@ -84,6 +84,18 @@ bool PlotterBase::event(QEvent *event)
         return true;
     }
 
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QString fileName;
+        if (horItemNameAt(helpEvent->pos(), fileName)== true) {
+//             QToolTip::showText(helpEvent->globalPos(), index.data(Qt::ToolTipRole).toString() );
+        } else {
+//             QToolTip::hideText();
+            event->ignore();
+        }
+        return true;
+    }
+
     return QWidget::event(event);
 }
 

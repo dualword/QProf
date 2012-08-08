@@ -62,6 +62,7 @@ protected:
     virtual void drawAxis(QPainter &p);
     virtual void drawContent(QPainter &p) = 0;
     virtual bool indexAt(const QPoint &p, QModelIndex &index ) = 0;
+    virtual bool horItemNameAt(const QPoint &p, QString &name ) = 0;
 
     AxisBase *m_axisX;
     AxisBase *m_axisY;

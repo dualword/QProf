@@ -43,6 +43,7 @@ public:
 protected:
     virtual void drawContent(QPainter &p);
     virtual bool indexAt(const QPoint &p, QModelIndex &index );
+    virtual bool horItemNameAt(const QPoint &p, QString &name );
     virtual void drawBarItem(QPainter &p, QRect rect,
                              QPen &pen, QBrush &brush,
                              const QModelIndex &index,

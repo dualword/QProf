@@ -159,7 +159,10 @@ void BarChartPlotter::drawContent(QPainter &p)
     } // switch
 }
 
-
+bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
+{
+    return false;
+}
 
 bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
 {
@@ -171,15 +174,15 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
 
     int p_y = m_axisY->toView(0);
 
-    int count = m_model->columnCount();
-    if (!count)
+    int col_count = m_model->columnCount();
+    if (!col_count)
         return false;
 
     int row_count = m_model->rowCount();
     if (!row_count)
         return false;
 
-    int p_offs = double(p_end - p_start) / count;
+    int p_offs = double(p_end - p_start) / col_count;
 
     int bar_size = p_offs * m_scale;
 
@@ -193,7 +196,7 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
     switch (m_type) {
     case Stacked:
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < col_count; i++) {
             int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
 
             double acc_value = 0;
@@ -245,7 +248,7 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
         if (!single_bar_size)
             return false;
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < col_count; i++) {
             int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
 
             int p_y = m_axisY->toView(0);
