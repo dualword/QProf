@@ -1,8 +1,10 @@
 #include <QAbstractItemView>
 
+// #include "./includes/qprofwidget.h"
 #include "./includes/plotterbase.h"
 #include "./includes/axisbase.h"
 
+// class QProfWidget;
 
 namespace QSint
 {
@@ -71,10 +73,13 @@ void PlotterBase::setModel(QAbstractItemModel *model)
 
 bool PlotterBase::event(QEvent *event)
 {
+
     if (event->type() == QEvent::ToolTip) {
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QPoint p = helpEvent->pos();
+
         QModelIndex index;
-        if (indexAt(helpEvent->pos(), index)== true) {
+        if (indexAt(p, index)== true) {
             QToolTip::showText(helpEvent->globalPos(), index.data(Qt::ToolTipRole).toString() );
         } else {
             QToolTip::hideText();
@@ -85,9 +90,13 @@ bool PlotterBase::event(QEvent *event)
     }
 
     if (event->type() == QEvent::MouseButtonDblClick) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QMouseEvent *helpEvent = static_cast<QMouseEvent *>(event);
+        QPoint p = helpEvent->pos();
         QString fileName;
-        if (horItemNameAt(helpEvent->pos(), fileName)== true) {
+
+        if (horItemNameAt(p, fileName)== true) {
+//             qDebug() << fileName << "clicked";
+            emit selectName(fileName);
 //             QToolTip::showText(helpEvent->globalPos(), index.data(Qt::ToolTipRole).toString() );
         } else {
 //             QToolTip::hideText();

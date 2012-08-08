@@ -33,7 +33,7 @@
  * 1.1.0      07 aug 2012    scaling for seconds enabled, overview page
  *                           ToolTip information on overview page for displaying of function/method names
  * 1.1.1      08 aug 2012    Q3Support removed completely grom call-graph.ui
- * 1.2.0      __ aug 2012    onClick added to select on overview page
+ * 1.2.0      09 aug 2012    onDblClick added to select of file on overview page
  *
  */
 
@@ -179,6 +179,8 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     connect (actionAbout_programm, SIGNAL (triggered ()), this, SLOT (about ()));
 //     actionAbout_Qt->setIcon(QIcon::fromTheme("about-qt"));
     connect (actionAbout_Qt, SIGNAL (triggered ()), this, SLOT (aboutQt ()));
+
+    connect (mBarPlot, SIGNAL (selectName(const QString&)), this, SLOT (selectFileName(const QString&)));
 
     connect (radioButton, SIGNAL (clicked()), this, SLOT (changeDiagram ()));
     connect (radioButton_2 , SIGNAL (clicked()), this, SLOT (changeDiagram ()));
@@ -526,6 +528,22 @@ void QProfWidget::loadSettings ()
     settings.endArray();
 }
 
+void QProfWidget::selectFileName(const QString& name)
+{
+//     qDebug() << name;
+
+    for(int num = 0; num < actFileSelect.count(); ++num) {
+//         qDebug() << (*actFileSelect.at(num)).text();
+        if ((*actFileSelect.at(num)).text().indexOf(name) >=0) {
+            selectedProfileNum = num;
+            actFileSelect.at(num)->setChecked (true);
+  
+            emit selectFile(selectGroup->actions().at(num));
+            break;
+        }
+    }
+    mTabs->setCurrentIndex(1); // next tab
+}
 
 void QProfWidget::selectFile (QAction* act)
 {
@@ -1171,16 +1189,6 @@ void QProfWidget::fillOverviewProfileList ()
         itemModel = new QStandardItemModel(MAX_ROWS, names.count(), this); // raws, columns
 //         itemModel->setContextMenuPolicy(Qt::CustomContextMenu);
         itemModel->setHorizontalHeaderLabels(names);
-
-#if 0
-        itemModel->setVerticalHeaderLabels(QStringList() <<
-                                           "Water" << "Coal" << "Oil" << "Sand" << "Stone");
-        itemModel->setHeaderData(0, Qt::Vertical, Qt::red, Qt::BackgroundRole);
-        itemModel->setHeaderData(1, Qt::Vertical, Qt::blue, Qt::BackgroundRole);
-        itemModel->setHeaderData(2, Qt::Vertical, Qt::green, Qt::BackgroundRole);
-        itemModel->setHeaderData(3, Qt::Vertical, Qt::yellow, Qt::BackgroundRole);
-        itemModel->setHeaderData(4, Qt::Vertical, Qt::white, Qt::BackgroundRole);
-#endif
 
         for (int j = 0; j < fCount; j++) { // columns
             float vol;
