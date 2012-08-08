@@ -32,6 +32,7 @@
  *                           loading of multoply files, autodetection of ELF format, if executable
  * 1.1.0      07 aug 2012    scaling for seconds enabled, overview page
  *                           ToolTip information on overview page for displaying of function/method names
+ * 1.1.1      08 aug 2012    Q3Support removed completely grom call-graph.ui
  * 1.2.0      __ aug 2012    onClick added to select on overview page
  *
  */
@@ -75,7 +76,7 @@
 #include <QUrl>
 
 // icons
-#include "./resource/lo32-app-qprof.xpm"
+#include "./resource/lo32-app-qprof.h"
 
 #include "./includes/constants.h"
 #include "./includes/qprofwidget.h"

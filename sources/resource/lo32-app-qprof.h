@@ -1,0 +1,61 @@
+/* XPM */
+
+#ifndef ICON_H
+#define ICON_H
+
+static char *appIcon[]= {
+    (char*)"32 32 18 1",
+    (char*)". c None",
+    (char*)"b c #000000",
+    (char*)"h c #000080",
+    (char*)"i c #004000",
+    (char*)"a c #303030",
+    (char*)"e c #404000",
+    (char*)"# c #585858",
+    (char*)"g c #808080",
+    (char*)"d c #a0a0a0",
+    (char*)"j c #a0a0a4",
+    (char*)"m c #c00000",
+    (char*)"k c #c0c0c0",
+    (char*)"c c #c3c3c3",
+    (char*)"n c #ff0000",
+    (char*)"l c #ffc0c0",
+    (char*)"p c #ffdca8",
+    (char*)"o c #ffffc0",
+    (char*)"f c #ffffff",
+    (char*)".##############ab...............",
+    (char*)".#cccccccccccdddeb..............",
+    (char*)".#cfffffffffff.c#gb.............",
+    (char*)".#cffffffffffff.#cgb............",
+    (char*)".#cfffhfffffffff#fcgb...........",
+    (char*)".#cffhfhffffffff#ff.gb..........",
+    (char*)".#cffhfhffffffff#.ffcgb.........",
+    (char*)".#cfffhfffffffff#c.ff.gb........",
+    (char*)".#cfffffffffffffg######ab.......",
+    (char*)".#cfffhffffffffff..ccdg#b.......",
+    (char*)".#cffhhfffffffffff..ccdgb.......",
+    (char*)".#cfffhfffffffffffffgbbbg....gi.",
+    (char*)".#cffhhhfffffffgffffbgjfb...kiib",
+    (char*)".#cfffffffffffblbkkbbbbbbbkkbgb.",
+    (char*)".#cfffhffffhfgmnlbbgggggggbbgj..",
+    (char*)".#cffhfhffhhfkbmbgggkkkkkgggb...",
+    (char*)".#cffhfhfffhffkbggkkffgffkkggb..",
+    (char*)".#cfffhfffhhhfbggkfgffkffgfkggb.",
+    (char*)".#cfffffffffokbgkfffkfgfnfffkgbb",
+    (char*)".#cfffhffffhfg#gkgffffgfnffgkggb",
+    (char*)".#cffhhfffhfhbgkffkfffgnffkffkgb",
+    (char*)".#cfffhoffhfhbgkffffffgnfffffkgb",
+    (char*)".#cffhhhofphpbgkgkffffnffffkgkgb",
+    (char*)".#cfffffffoffbgkffffffnffffffkgb",
+    (char*)".#cfffpfpfphpbgkffkfffffffkffkgb",
+    (char*)".#cfffffofhhog#gkgfffffffffgkggb",
+    (char*)".#cfffofpfphpkbgkfffkfffkfffkgbb",
+    (char*)".#cfffoffphhhfbggkfgffkffgfkggbb",
+    (char*)".#cfofpfp.p.pfkbggkkffgffkkggbi.",
+    (char*)".#cfopfpopfpfd.dbgggkkkkkgggbg..",
+    (char*)".#cccccdcdcdd.dddbbgggggggbbi...",
+    (char*)".baaaaaaaaaaabbbbbbbbbbbbbbb...."
+};
+
+
+#endif // ICON_H
