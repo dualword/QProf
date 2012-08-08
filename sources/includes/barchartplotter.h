@@ -15,13 +15,6 @@ public:
     explicit BarChartPlotter(QWidget *parent = 0);
 
 
-    enum BarChartType { Stacked, Columns };
-
-    void setBarType(BarChartType type);
-    inline BarChartType barType() const {
-        return m_type;
-    }
-
     void setBarSize(int min, int max = INT_MAX);
     inline int barSizeMin() const {
         return m_barsize_min;
@@ -52,8 +45,6 @@ protected:
     int m_barsize_min, m_barsize_max;
     double m_scale;
     double m_opacity;
-
-    BarChartType m_type;
 };
 
 

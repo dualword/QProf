@@ -537,7 +537,7 @@ void QProfWidget::selectFileName(const QString& name)
         if ((*actFileSelect.at(num)).text().indexOf(name) >=0) {
             selectedProfileNum = num;
             actFileSelect.at(num)->setChecked (true);
-  
+
             emit selectFile(selectGroup->actions().at(num));
             break;
         }
@@ -1276,7 +1276,6 @@ void QProfWidget::fillOverviewProfileList ()
         mBarPlot->setModel(itemModel);
     }
 
-    mBarPlot->setBarType(QSint::BarChartPlotter::Stacked);
     mBarPlot->repaint();
 }
 

@@ -9,18 +9,11 @@ namespace QSint
 BarChartPlotter::BarChartPlotter(QWidget *parent) :
     PlotterBase(parent)
 {
-    setBarType(Stacked);
-
     m_axisX->setType(AxisBase::AxisModel);
 
     setBarSize(-INT_MAX, INT_MAX);
     setBarScale(0.5);
     setBarOpacity(1.0);
-}
-
-void BarChartPlotter::setBarType(BarChartType type)
-{
-    m_type = type;
 }
 
 void BarChartPlotter::setBarSize(int min, int max)
@@ -74,89 +67,46 @@ void BarChartPlotter::drawContent(QPainter &p)
         bar_size = qMin(m_barsize_min, p_offs);
 
 
+    for (int i = 0; i < count; i++) {
+        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
 
-    switch (m_type) {
-    case Stacked:
+        double acc_value = 0;
+        int p_y = m_axisY->toView(0);
 
-        for (int i = 0; i < count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+        double neg_value = 0;
+        int p_ny = p_y;
 
-            double acc_value = 0;
-            int p_y = m_axisY->toView(0);
+        p.setOpacity(m_opacity);
 
-            double neg_value = 0;
-            int p_ny = p_y;
+        for (int j = 0; j < row_count; j++) {
+            const QModelIndex index(m_model->index(j, i));
 
-            p.setOpacity(m_opacity);
+            QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
+            QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
 
-            for (int j = 0; j < row_count; j++) {
-                const QModelIndex index(m_model->index(j, i));
+            double value = m_model->data(index).toDouble();
 
-                QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
-                QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
+            if (value < 0) {
+                neg_value += value;
 
-                double value = m_model->data(index).toDouble();
+                int p_h = m_axisY->toView(neg_value);
 
-                if (value < 0) {
-                    neg_value += value;
+                drawBarItem(p, QRect(p_d, p_ny, bar_size, p_h-p_ny), pen, brush, index, value);
 
-                    int p_h = m_axisY->toView(neg_value);
+                p_ny = p_h;
+            }
+            else {
+                acc_value += value;
 
-                    drawBarItem(p, QRect(p_d, p_ny, bar_size, p_h-p_ny), pen, brush, index, value);
+                int p_h = m_axisY->toView(acc_value);
 
-                    p_ny = p_h;
-                }
-                else {
-                    acc_value += value;
+                drawBarItem(p, QRect(p_d, p_h, bar_size, p_y-p_h), pen, brush, index, value);
 
-                    int p_h = m_axisY->toView(acc_value);
-
-                    drawBarItem(p, QRect(p_d, p_h, bar_size, p_y-p_h), pen, brush, index, value);
-
-                    p_y = p_h;
-                }
+                p_y = p_h;
             }
         }
+    }
 
-        break;
-
-    case Columns:
-    {
-        int single_bar_size = bar_size/row_count;
-        if (!single_bar_size)
-            return;
-
-        for (int i = 0; i < count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
-
-            int p_y = m_axisY->toView(0);
-
-            p.setOpacity(m_opacity);
-
-            for (int j = 0; j < row_count; j++) {
-                const QModelIndex index(m_model->index(j, i));
-                QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
-                QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
-
-                double value = m_model->data(index).toDouble();
-
-                int p_h = m_axisY->toView(value);
-
-                if (value < 0) {
-                    drawBarItem(p, QRect(p_d, p_y, single_bar_size, p_h-p_y), pen, brush, index, value);
-                }
-                else {
-                    drawBarItem(p, QRect(p_d, p_h, single_bar_size, p_y-p_h), pen, brush, index, value);
-                }
-
-                p_d += single_bar_size;
-            }
-        }
-
-        break;
-    } // Nearby
-
-    } // switch
 }
 
 bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
@@ -189,43 +139,15 @@ bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
     int p_y = m_axisY->toView(m_axisY->rangeMininum());
     int p_h = m_axisY->toView(m_axisY->rangeMaximum());
 
-    switch (m_type) {
-    case Stacked:
-    {
-        for (int i = 0; i < col_count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+    for (int i = 0; i < col_count; i++) {
+        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
 
-            if ((p.x() >= p_d) && (p.x() <= (p_d+bar_size))) {
-                name =  m_model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
-                return true;
-            }
+        if ((p.x() >= p_d) && (p.x() <= (p_d+bar_size))) {
+            name =  m_model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
+            return true;
         }
-
-        break;
     }
-    case Columns:
-    {
-        int single_bar_size = bar_size/row_count;
-        if (!single_bar_size)
-            return false;
 
-//         int p_y = m_axisY->toView(m_axisY->rangeMininum());
-//         int p_h = m_axisY->toView(m_axisY->rangeMaximum());
-
-        for (int i = 0; i < col_count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
-
-            QRect r(p_d, p_y, single_bar_size, p_h);
-            if (r.contains(p) == true) {
-                name =  m_model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
-                return true;
-            }
-        }
-
-        break;
-    } // Nearby
-
-    } // switch
     return false;
 }
 
@@ -258,99 +180,48 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
         bar_size = qMin(m_barsize_min, p_offs);
 
 
+    for (int i = 0; i < col_count; i++) {
+        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
 
-    switch (m_type) {
-    case Stacked:
+        double acc_value = 0;
+        int p_y = m_axisY->toView(0);
 
-        for (int i = 0; i < col_count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+        double neg_value = 0;
+        int p_ny = p_y;
 
-            double acc_value = 0;
-            int p_y = m_axisY->toView(0);
+        for (int j = 0; j < row_count; j++) {
+            const QModelIndex index(m_model->index(j, i));
 
-            double neg_value = 0;
-            int p_ny = p_y;
+            double value = m_model->data(index).toDouble();
 
-            for (int j = 0; j < row_count; j++) {
-                const QModelIndex index(m_model->index(j, i));
-//                 QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
-//                 QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
+            if (value < 0) {
+                neg_value += value;
 
-                double value = m_model->data(index).toDouble();
+                int p_h = m_axisY->toView(neg_value);
 
-                if (value < 0) {
-                    neg_value += value;
-
-                    int p_h = m_axisY->toView(neg_value);
-
-                    QRect r(p_d, p_ny, bar_size, p_h-p_ny);
-                    if (r.contains(p) == true) {
-                        idx = index;
-                        return true;
-                    }
-
-                    p_ny = p_h;
+                QRect r(p_d, p_ny, bar_size, p_h-p_ny);
+                if (r.contains(p) == true) {
+                    idx = index;
+                    return true;
                 }
-                else {
-                    acc_value += value;
 
-                    int p_h = m_axisY->toView(acc_value);
-                    QRect r(p_d, p_h, bar_size, p_y-p_h);
-                    if (r.contains(p) == true) {
-                        idx = index;
-                        return true;
-                    }
+                p_ny = p_h;
+            }
+            else {
+                acc_value += value;
 
-                    p_y = p_h;
+                int p_h = m_axisY->toView(acc_value);
+                QRect r(p_d, p_h, bar_size, p_y-p_h);
+                if (r.contains(p) == true) {
+                    idx = index;
+                    return true;
                 }
+
+                p_y = p_h;
             }
         }
+    }
 
-        break;
-
-    case Columns:
-    {
-        int single_bar_size = bar_size/row_count;
-        if (!single_bar_size)
-            return false;
-
-        for (int i = 0; i < col_count; i++) {
-            int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
-
-            int p_y = m_axisY->toView(0);
-
-            for (int j = 0; j < row_count; j++) {
-                const QModelIndex index(m_model->index(j, i));
-//                 QPen pen(qvariant_cast<QColor>(m_model->data(index, Qt::ForegroundRole)));
-//                 QBrush brush(qvariant_cast<QBrush>(m_model->data(index, Qt::BackgroundRole)));
-
-                double value = m_model->data(index).toDouble();
-
-                int p_h = m_axisY->toView(value);
-
-                if (value < 0) {
-                    QRect r(p_d, p_y, single_bar_size, p_h-p_y);
-                    if (r.contains(p) == true) {
-                        idx = index;
-                        return true;
-                    }
-                }
-                else {
-                    QRect r(p_d, p_h, single_bar_size, p_y-p_h);
-                    if (r.contains(p) == true) {
-                        idx = index;
-                        return true;
-                    }
-                }
-
-                p_d += single_bar_size;
-            }
-        }
-
-        break;
-    } // Nearby
-
-    } // switch
     return false;
 }
 

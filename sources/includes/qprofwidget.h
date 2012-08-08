@@ -155,7 +155,7 @@ public slots:
     void selectFile (QAction* act);
     void openCommandLineFiles ();
     void doPrint ();
-  
+
     void profileEntryRightClick (const QPoint & iPoint);
     void flatProfileFilterChanged (const QString &filter);
     void generateCallGraph ();
@@ -169,7 +169,7 @@ public slots:
     void configure();
     void selectFileName(const QString& name);
 
-    
+
 protected slots:
     void gprofStdout ();
     void gprofStderr ();

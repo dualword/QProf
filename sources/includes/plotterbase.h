@@ -52,7 +52,7 @@ public:
 
 signals:
     void selectName(const QString& name);
-    
+
 public slots:
 
 protected:
