@@ -34,6 +34,7 @@
  *                           ToolTip information on overview page for displaying of function/method names
  * 1.1.1      08 aug 2012    Q3Support removed completely grom call-graph.ui
  * 1.2.0      09 aug 2012    onDblClick added to select of file on overview page
+ * 1.2.1      12 aug 2012    additional popup window for help about colorizing
  *
  */
 
@@ -67,6 +68,7 @@
 #include <QPainter>
 #include <QSettings>
 #include <QLocale>
+#include <QPushButton>
 #include <QToolButton>
 #include <QMouseEvent>
 #include <QMenu>
@@ -87,6 +89,7 @@
 #include "./includes/dotCallGraph.h"
 // #include "./includes/vcgCallGraph.h"
 #include "./includes/aboutform.h"
+#include "./includes/colorform.h"
 #include "./includes/clientsidemap.h"
 #include "./includes/parseprofile_gprof.h"
 #include "./includes/parseprofile_fnccheck.h"
@@ -183,6 +186,7 @@ QProfWidget::QProfWidget (QWidget* parent, Qt::WindowFlags flags)
     connect (mBarPlot, SIGNAL (selectName(const QString&)), this, SLOT (selectFileName(const QString&)));
 
     connect (radioButton, SIGNAL (clicked()), this, SLOT (changeDiagram ()));
+     connect (pushColor, SIGNAL (clicked()), this, SLOT (colorCoding ()));
     connect (radioButton_2 , SIGNAL (clicked()), this, SLOT (changeDiagram ()));
 //     connect(mCallTree, SIGNAL(openURLRequestDelayed( const QUrls &)), this, SLOT(openURLRequestDelayed( const QUrls &)));
 
@@ -252,6 +256,11 @@ void QProfWidget::aboutQt()
     QMessageBox::aboutQt ( this, PROGRAM_NAME );
 }
 
+void QProfWidget::colorCoding()
+{
+    colorForm colorPopUp;
+    colorPopUp.exec();
+}
 
 void QProfWidget::about()
 {

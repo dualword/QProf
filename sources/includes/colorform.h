@@ -16,31 +16,26 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#include <QDesktopServices>
-#include <QUrl>
-#include "ui_aboutForm.h"
-#include "./includes/aboutform.h"
-#include "./includes/constants.h"
 
-aboutForm::aboutForm(QWidget* parent, Qt::WFlags fl)
-    : QDialog( parent, fl ), Ui::aboutDialog()
+#ifndef COLORFORM_H
+#define COLORFORM_H
+
+#include <QDialog>
+#include "ui_colors.h"
+
+class colorForm : public QDialog, private Ui::colorPopUp
 {
-    setupUi(this);
+    Q_OBJECT
 
-    logoText->setText ( QString( "<h3>" + QString(PROGRAM_NAME) + "</h3>" ) );
+public:
+    colorForm(QWidget* parent = 0, Qt::WFlags fl = 0 );
+    ~colorForm();
 
-    connect ( cancelButton, SIGNAL ( clicked() ), this, SLOT ( reject() ) );
-    connect ( toolButton, SIGNAL ( clicked() ), this, SLOT ( onPayPal() ) );
+public slots:
 
+protected:
 
-    setWindowTitle ( tr ( "About QProf" ) );
-}
+};
 
-void aboutForm::onPayPal(void)
-{
-    QDesktopServices::openUrl(QUrl((DONATE_STR)));
-}
+#endif
 
-aboutForm::~aboutForm()
-{
-}

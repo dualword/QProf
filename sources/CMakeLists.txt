@@ -11,6 +11,7 @@ set(MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cconfigure.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/aboutform.cpp
+		    ${CMAKE_CURRENT_SOURCE_DIR}/colorform.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/parseprofile_gprof.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/clientsidemap.cpp
 		    ${CMAKE_CURRENT_SOURCE_DIR}/cprofileviewitem.cpp
@@ -33,7 +34,8 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/ctidyup.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/qprofwidget.h
 		${CMAKE_CURRENT_SOURCE_DIR}/includes/aboutform.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_gprof.h
+		${CMAKE_CURRENT_SOURCE_DIR}/includes/colorform.h
+		${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_gprof.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_pose.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_callgrind.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/includes/parseprofile_oprofile.h
@@ -53,6 +55,7 @@ set(MAIN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/includes/cconfigure.h
 
 set(MAIN_FORMS  ${CMAKE_CURRENT_SOURCE_DIR}/forms/mainForm.ui
                 ${CMAKE_CURRENT_SOURCE_DIR}/forms/call-graph.ui
+                ${CMAKE_CURRENT_SOURCE_DIR}/forms/colors.ui
                 ${CMAKE_CURRENT_SOURCE_DIR}/forms/aboutForm.ui
                 PARENT_SCOPE)
 

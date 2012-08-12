@@ -162,6 +162,7 @@ public slots:
     void displayTreeMapView();
     void aboutQt();
     void changeDiagram ();
+    void colorCoding();
     void about();
     void quit();
     void toggleTemplateAbbrev (bool state);
