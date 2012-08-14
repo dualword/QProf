@@ -12,9 +12,7 @@ MESSAGE("Detected CPU number =" ${CPU_NUMBER})
 
 ## Compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -j${CPU_NUMBER}")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -j${CPU_NUMBER}")
-#    list(APPEND FLAGS "-j${CPU_NUMBER}")
+    set(ENV{MAKEFLAGS} -j${CPU_NUMBER})
 endif()
 
 IF(DEBUG)
