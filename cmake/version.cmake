@@ -6,11 +6,12 @@ EXECUTE_PROCESS (
 IF(NOT DESCRIBE_STRING)
 	SET(DESCRIBE_STRING "no valid git tag for ${PROJECT_NAME} found")
 ELSE()
-	STRING(REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+).*" VERSION "${DESCRIBE_STRING}" )
+	STRING(REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)\\.*" VERSION "${DESCRIBE_STRING}" )
 	IF (NOT VERSION)
 		SET(DESCRIBE_STRING "no valid git tag ${PROJECT_NAME}-x.x.x found")
 	ENDIF()
 ENDIF()
+
 MESSAGE("--- version info: ${DESCRIBE_STRING}") 
 CONFIGURE_FILE(${SRC} ${DST} @ONLY)
 

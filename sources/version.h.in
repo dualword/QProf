@@ -1,2 +1,7 @@
-//const char *version = "@DESCRIBE_STRING@";
-const string version = "@DESCRIBE_STRING@";
+#ifndef GPROFVERSION_H
+#define GPROFVERSION_H
+
+#define GPROF_VER "@VERSION@"
+//const string version = "@DESCRIBE_STRING@";
+
+#endif
