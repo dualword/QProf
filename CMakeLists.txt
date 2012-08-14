@@ -15,11 +15,21 @@ ENDIF(ADVDEBUG)
 
 SET(CMAKE_BUILD_TYPE Debug)
 
+EXEC_PROGRAM(cat ARGS /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | wc -l
+                OUTPUT_VARIABLE CPU_NUMBER)
+SET(CPU_NUMBER "${CPU_NUMBER}")
+
+MESSAGE("Detected CPU number =" ${CPU_NUMBER})
 
 SET ( OBJECTS_DIR temp )
 SET ( MOC_DIR temp )
 SET ( UI_HEADERS_DIR temp )
 SET ( UI_SOURCES_DIR temp )
+
+## Compiler flags
+if(CMAKE_COMPILER_IS_GNUCXX)
+    list(APPEND FLAGS "-j${CPU_NUMBER}")
+endif()
 
 add_subdirectory(sources)
 add_subdirectory(sources/resource)
