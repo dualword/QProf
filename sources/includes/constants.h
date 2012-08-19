@@ -24,8 +24,8 @@
 #ifndef __QPROFCONSTS_H__
 #define __QPROFCONSTS_H__
 
-#define PROGRAM_NAME "QProf v.1.2.1"
-#define PROGRAM_VERSION "<b>v.1.2.1 (12 aug 2012)</b>"
+#define PROGRAM_NAME "QProf v.1.2.2"
+#define PROGRAM_VERSION "<b>v.1.2.2 (19 aug 2012)</b>"
 
 
 #define col_function_t                "Function/Method"

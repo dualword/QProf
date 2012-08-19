@@ -239,12 +239,16 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
                                 num = line.mid(pos + 1, posSpace-pos-1);
                             else
                                 num = line.mid(pos + 1);
-
-//                             for (int i= 0; i <func->numCalls.count(); i++){
-//                                 if (func->called.at(i) == cf){
-//                                     func->numCalls[i] = num.toULongLong();
-//                                 }
-//                             }
+// 
+                            for (int i= 0; i <func->called.count(); i++){
+                                
+                                if (func->called.at(i)->name == function[actualCalledFuncId]){
+//                                     qDebug() << "called func id: "<< actualCalledFuncId << "calls" << num << "called" << func->called.at(i)->name;
+                                    func->numCalls[i] = num.toULongLong();
+                                    func->called.at(i)->calls = num.toULongLong();
+                                    
+                                }
+                            }
 
                         }
                     }
@@ -589,9 +593,34 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 //         cf->name = function[actualCalledFuncId];
 
         f = findFunction(workCProfile, actualFuncId);
+        
+         
         if (f != NULL) {
-//             if (f->called.count() == 0 || f->called.indexOf(cf) == -1){
+            bool found = false;
+            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
+                if ((*ic)->name == cf->name){
+//                     cf->recursive = true;
+//                     beforePrimary = false;
+                    found = true;
+                    break;
+                }
+            }
+
+//             if (beforePrimary) {
+//                 if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
+//                     f->callers.append (cf);
+// //                     f->numCalls.append(0);
+//                 }
+//             } else {
+//                 if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
+//                     f->called.append ( cf);
+// //                     f->numCalls.append(0);
+//                 }
+//             }
+//             if (/*f->called.count() == 0 || */f->called.indexOf(cf) == -1){
+//             if (found == false){
 //                 f->called.append(cf);
+//                     cf->callers.append(f);
 //                 f->numCalls.append(0);
 //             }
 //
@@ -637,12 +666,36 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
     else
         cf->method = cf->name;
 
+    bool beforePrimary = true;
+
     f = findFunction(workCProfile, actualFuncId);
     if (f != NULL) {
-        if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
-            f->called.append(cf);
-            f->numCalls.append(0);
-        }
+         bool found = false;
+            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
+                if ((*ic)->name == cf->name){
+                    cf->recursive = true;
+                    beforePrimary = false;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!beforePrimary) {
+                if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
+                    f->callers.append (cf);
+//                     f->numCalls.append(0);
+                }
+            } else {
+                if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
+                    f->called.append ( cf);
+                    f->numCalls.append(0);
+                }
+            }
+            
+//         if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
+//             f->called.append(cf);
+//             f->numCalls.append(0);
+//         }
 //          if (cf->callers.count() == 0 || cf->callers.indexOf(f) == -1){
 //             cf->callers.append(f);
 //          }

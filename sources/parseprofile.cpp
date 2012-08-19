@@ -28,8 +28,7 @@ CParseProfile::CParseProfile()
     mValid = true;
 }
 
-void CParseProfile::processCallGraphBlock (const QVector<SCallGraphEntry> &data,
-        QVector<CProfileInfo>& profile)
+void CParseProfile::processCallGraphBlock (const QVector<SCallGraphEntry> &data,  QVector<CProfileInfo>& profile)
 {
     // process a call graph block. The list of entries is stored in the
     // order they are encountered, which is very important because the
