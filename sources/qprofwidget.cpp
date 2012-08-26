@@ -35,7 +35,7 @@
  * 1.1.1      08 aug 2012    Q3Support removed completely grom call-graph.ui
  * 1.2.0      09 aug 2012    onDblClick added to select of file on overview page
  * 1.2.1      12 aug 2012    additional popup window for help about colorizing
- * 1.2.2      19 aug 2012    bugfixes callgrind 
+ * 1.2.2      19 aug 2012    bugfixes callgrind
  *
  */
 

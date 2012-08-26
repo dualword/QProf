@@ -4,7 +4,7 @@ PROJECT(qprof)
 FIND_PACKAGE(Git)
 FIND_PACKAGE(Qt4 REQUIRED)
 
-EXEC_PROGRAM(cat ARGS /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | wc -l
+EXEC_PROGRAM(grep ARGS -c '^processor' /proc/cpuinfo
                 OUTPUT_VARIABLE CPU_NUMBER)
 SET(CPU_NUMBER "${CPU_NUMBER}")
 

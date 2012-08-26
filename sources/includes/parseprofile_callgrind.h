@@ -80,6 +80,7 @@ private:
 //     bool parse_empty();
 //     bool parse_comment();
     long long extractId(const QString& ln);
+    void recalculate( QVector<CProfileInfo>& profile);
     bool parse_key(const QString& key );
     bool parse_keys(const QStringList& keyList);//??
     void cleanPointers(QVector<CProfileInfo>& workCProfile);

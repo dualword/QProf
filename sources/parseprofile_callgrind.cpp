@@ -47,9 +47,14 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 
 //     callGraphBlock.resize (32);
 
-    CProfileInfo *func;
+    CProfileInfo *rootFunc;
+    CProfileInfo *subFunc;
 //     int lines = 0;
     bool hasIdInfo = false;
+    unsigned long samplFunc;
+    unsigned long samplSubFunc;
+//     bool scanSubF;
+
 
 
     while (!strm.atEnd()) {
@@ -63,12 +68,13 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             if (hasIdInfo == false)
                 continue;
 
-            func = findFunction(profile, actualFuncId);
-            if (func == NULL) {
+//             func = findFunction(profile, actualFuncId);
+            if (rootFunc == NULL) {
                 continue;
             }
-
-            func->custom.callgrind.cumSamples = func->custom.callgrind.selfSamples;
+//             rootFunc = NULL;
+            subFunc = NULL;
+            //func->custom.callgrind.cumSamples = func->custom.callgrind.selfSamples;
 //             for(int i=0; i<func->numCalls.count(); i++) {
 //                 func->custom.callgrind.cumSamples += (func->numCalls[i] * func->called[i]->custom.callgrind.selfSamples);
 //             }
@@ -90,14 +96,13 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
                 continue;
             }
 
-            func = findFunction(profile, actualFuncId);
-            if (func == NULL) {
+//             func = findFunction(profile, actualFuncId);
+            if (rootFunc == NULL) {
                 continue;
             }
 
             QString num;
             bool io;
-            unsigned long sampl;
 
             int pos = line.lastIndexOf(" ");
             if (pos > 0 )
@@ -105,18 +110,24 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             else
                 continue;
 
-            sampl = num.toULong(&io);
+            samplFunc = num.toULong(&io);
             if (io == false) {
                 qDebug() << QString("Invalid line '%1'").arg(line);
                 continue;
             }
 
-            func->custom.callgrind.selfSamples += sampl;
-
+            if (subFunc == NULL) {
+                rootFunc->custom.callgrind.cumSamples += samplFunc;
+            }
+            else {
+                subFunc->custom.callgrind.cumSamples += samplFunc;
+            }
             // go through after big switch
         } else {
             switch(c) {
             case 'f':
+                subFunc = NULL;
+                cleanPointers(profile);
                 // fl=, fi=, fe=
                 if (line.startsWith("fl=") || line.startsWith("fi=") || line.startsWith("fe=")) {
                     int pos = line.indexOf(" ");
@@ -148,10 +159,10 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
                         }
                     }
 
-                    func = make_function(profile);
+                    rootFunc = make_function(profile);
 
 
-                    if (func == NULL) {
+                    if (rootFunc == NULL) {
                         continue;
                     }
                     hasIdInfo = true;
@@ -217,17 +228,19 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
                         }
                     }
 
-                    func = make_CalledFunction(profile);
+                    subFunc = make_CalledFunction(profile);
 
                     continue;
                 }
 
                 // calls=
                 if (line.startsWith("calls=")) {
+                    CProfileInfo *tfunc;
+                    long int callNum = 0;
                     // ignore long lines...
 //                     line.stripUInt64(currentCallCount);
-                    func = findFunction(profile, actualFuncId);
-                    if (func != NULL) {
+                    tfunc = findFunction(profile, actualFuncId);
+                    if (tfunc != NULL) {
                         CProfileInfo* cf;
                         cf = findFunction(profile, actualCalledFuncId);
 //                         if (cf==NULL) qDebug() << line << actualCalledFuncId;
@@ -239,18 +252,22 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
                                 num = line.mid(pos + 1, posSpace-pos-1);
                             else
                                 num = line.mid(pos + 1);
-// 
-                            for (int i= 0; i <func->called.count(); i++){
-                                
-                                if (func->called.at(i)->name == function[actualCalledFuncId]){
+
+                            callNum = num.toULongLong();
+//
+                            for (int i= 0; i <tfunc->called.count(); i++) {
+
+                                if (tfunc->called.at(i)->name == function[actualCalledFuncId]) {
 //                                     qDebug() << "called func id: "<< actualCalledFuncId << "calls" << num << "called" << func->called.at(i)->name;
-                                    func->numCalls[i] = num.toULongLong();
-                                    func->called.at(i)->calls = num.toULongLong();
-                                    
+                                    tfunc->numCalls[i] = callNum;
+                                    tfunc->called.at(i)->calls = callNum;
                                 }
                             }
-
                         }
+                    }
+                    tfunc = findFunction(profile, actualCalledFuncId);
+                    if (tfunc != NULL) {
+                        tfunc->calls += callNum;
                     }
                     continue;
                 }
@@ -382,14 +399,10 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             case 's':
                 // summary:
                 if (line.startsWith("summary:")) {
-                    summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
-//                     if (!mapping) {
-//                         error(QString("No event line found. Skipping file"));
-//                         delete _part;
-//                         return false;
-//                     }
-//
-//                     _part->totals()->set(mapping, line);
+                    QString num;
+                    num = line.mid(line.indexOf(" ") + 1);
+                    summary =  num.toLongLong();
+
                     continue;
                 }
 
@@ -416,16 +429,43 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 //             continue;
         }
 
-        if (func == NULL)
+        if (rootFunc == NULL)
             continue;
     }
 
     cleanPointers(profile);
 
+    recalculate(profile);
+
 //     processCallGraphBlock (callGraphBlock, profile);
 //     callGraphBlock.resize(0);
 //     return true;
 
+}
+
+void CParseProfile_callgrind::recalculate( QVector<CProfileInfo>& profile) {
+    for(QVector<CProfileInfo>::iterator iPr = profile.begin(); iPr != profile.end(); ++iPr) {
+        if ((*iPr).calls != 0) {
+            (*iPr).custom.callgrind.selfSamples = (*iPr).custom.callgrind.cumSamples / (*iPr).calls;
+        }
+        if (summary > 0) {
+            (*iPr).cumPercent = (*iPr).custom.callgrind.cumSamples / (float)summary;
+            (*iPr).selfSeconds = (*iPr).custom.callgrind.selfSamples / (float)summary;
+            for(int i=0; i< (*iPr).called.count(); ++i) {
+                if ((*iPr).called.at(i)->calls != 0) {
+                    (*iPr).called.at(i)->cumPercent = (*iPr).called.at(i)->custom.callgrind.cumSamples / (float)summary;
+                    (*iPr).called.at(i)->selfSeconds = (*iPr).called.at(i)->custom.callgrind.selfSamples / (float)summary;
+
+//                     (*iPr).called.at(i)->custom.callgrind.selfSamples = (*iPr).called.at(i)->custom.callgrind.cumSamples / (*iPr).called.at(i)->calls;
+                }
+            }
+        }
+        for(int i=0; i< (*iPr).called.count(); ++i) {
+            if ((*iPr).called.at(i)->calls != 0) {
+                (*iPr).called.at(i)->custom.callgrind.selfSamples = (*iPr).called.at(i)->custom.callgrind.cumSamples / (*iPr).called.at(i)->calls;
+            }
+        }
+    }
 }
 
 long long CParseProfile_callgrind::extractId(const QString& ln) {
@@ -452,7 +492,11 @@ void  CParseProfile_callgrind::cleanPointers(QVector<CProfileInfo>& workCProfile
     int pos;
 
     p = findFunction(workCProfile, actualFuncId);
+    if (p == NULL)
+        return;
 
+//
+//
     for(int i=0; i< p->called.count(); ++i) {
         for(int j=i+1; j< p->called.count(); ) {
             if (p->called[i] == p->called[j]) {
@@ -554,7 +598,7 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
     p->name = funN;
     p->called.clear();
     p->callers.clear();
-    p->numCalls.clear();
+    p->calls = 0;
     /*
         if (buildGraph(p, true) == false){
             delete p;
@@ -593,12 +637,12 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 //         cf->name = function[actualCalledFuncId];
 
         f = findFunction(workCProfile, actualFuncId);
-        
-         
+
+
         if (f != NULL) {
             bool found = false;
-            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
-                if ((*ic)->name == cf->name){
+            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic) {
+                if ((*ic)->name == cf->name) {
 //                     cf->recursive = true;
 //                     beforePrimary = false;
                     found = true;
@@ -670,28 +714,28 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 
     f = findFunction(workCProfile, actualFuncId);
     if (f != NULL) {
-         bool found = false;
-            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
-                if ((*ic)->name == cf->name){
-                    cf->recursive = true;
-                    beforePrimary = false;
-                    found = true;
-                    break;
-                }
+        bool found = false;
+        for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic) {
+            if ((*ic)->name == cf->name) {
+                cf->recursive = true;
+                beforePrimary = false;
+                found = true;
+                break;
             }
+        }
 
-            if (!beforePrimary) {
-                if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
-                    f->callers.append (cf);
-//                     f->numCalls.append(0);
-                }
-            } else {
-                if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
-                    f->called.append ( cf);
-                    f->numCalls.append(0);
-                }
+        if (!beforePrimary) {
+            if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
+                f->callers.append (cf);
+                f->numCalls.append(0);
             }
-            
+        } else {
+            if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
+                f->called.append ( cf);
+                f->numCalls.append(0);
+            }
+        }
+
 //         if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
 //             f->called.append(cf);
 //             f->numCalls.append(0);
