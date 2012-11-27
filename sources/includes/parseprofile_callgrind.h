@@ -33,37 +33,37 @@ class CProfileInfo;
 
 class PositionSpec
 {
-public:
-    PositionSpec() {
-        fromLine = 0, toLine = 0, fromAddr = 0, toAddr = 0;
-    }
-    PositionSpec(uint l1, uint l2, unsigned long long a1, unsigned long long a2) {
-        fromLine = l1, toLine = l2, fromAddr = a1, toAddr = a2;
-    }
+    public:
+        PositionSpec() {
+            fromLine = 0, toLine = 0, fromAddr = 0, toAddr = 0;
+        }
+        PositionSpec(uint l1, uint l2, unsigned long long a1, unsigned long long a2) {
+            fromLine = l1, toLine = l2, fromAddr = a1, toAddr = a2;
+        }
 
-    bool isLineRegion() const {
-        return (fromLine != toLine);
-    }
-    bool isAddrRegion() const {
-        return (fromAddr != toAddr);
-    }
+        bool isLineRegion() const {
+            return (fromLine != toLine);
+        }
+        bool isAddrRegion() const {
+            return (fromAddr != toAddr);
+        }
 
-    uint fromLine, toLine;
-    unsigned long long fromAddr, toAddr;
+        uint fromLine, toLine;
+        unsigned long long fromAddr, toAddr;
 };
 
 class CParseProfile_callgrind : public CParseProfile
 {
-public:
-    CParseProfile_callgrind(QTextStream& t, QVector<CProfileInfo>& profile);
-    ~CParseProfile_callgrind() {};
+    public:
+        CParseProfile_callgrind(QTextStream& t, QVector<CProfileInfo>& profile);
+        ~CParseProfile_callgrind() {};
 
-    bool valid () const;
+        bool valid () const;
 
-    enum lineType { SelfCost, CallCost, BoringJump, CondJump };
+        enum lineType { SelfCost, CallCost, BoringJump, CondJump };
 
-private:
-    CParseProfile_callgrind(); // init
+    private:
+        CParseProfile_callgrind(); // init
 //     bool parsePosition(const QString& s, PositionSpec& newPos);
 //     bool parse_part();
 //     bool parse();
@@ -79,51 +79,51 @@ private:
 //     bool parse_position_spec();
 //     bool parse_empty();
 //     bool parse_comment();
-    long long extractId(const QString& ln);
-    bool parse_key(const QString& key );
-    bool parse_keys(const QStringList& keyList);//??
-    void cleanPointers(QVector<CProfileInfo>& workCProfile);
-    bool buildGraph(CProfileInfo* p, bool prim);
-    CProfileInfo* findFunction(QVector<CProfileInfo> &workCProfile, long int id);
-    CProfileInfo* make_function(QVector<CProfileInfo> &workCProfile);
-    CProfileInfo* make_CalledFunction(QVector<CProfileInfo> &workCProfile);
+        long long extractId(const QString& ln);
+        bool parse_key(const QString& key );
+        bool parse_keys(const QStringList& keyList);//??
+        void cleanPointers(QVector<CProfileInfo>& workCProfile);
+        bool buildGraph(CProfileInfo* p, bool prim);
+        CProfileInfo* findFunction(QVector<CProfileInfo> &workCProfile, long int id);
+        CProfileInfo* make_function(QVector<CProfileInfo> &workCProfile);
+        CProfileInfo* make_CalledFunction(QVector<CProfileInfo> &workCProfile);
 //         CProfileInfo* get_function_entries();
 //         CProfileInfo* get_call_entries();
 
-private:
-    CProfileInfo **indexToProfile;
+    private:
+        CProfileInfo **indexToProfile;
 //     QRegExp _call_re;
-    QString cost_events;
+        QString cost_events;
 //     QRegExp _position_re;
-    int num_positions;
-    QString cost_positions;
+        int num_positions;
+        QString cost_positions;
 //     QRegExp _cost_re;
 //     QRegExp _key_re;
-    long linenr;
-    int  actualFileId;
-    int  actualLibId;
-    int  actualFuncId;
-    int  actualCalledFileId;
-    int  actualCalledLibId;
-    int  actualCalledFuncId;
+        long linenr;
+        int  actualFileId;
+        int  actualLibId;
+        int  actualFuncId;
+        int  actualCalledFileId;
+        int  actualCalledLibId;
+        int  actualCalledFuncId;
 
-    QHash<int, QString> libName;   // id for lib name
-    QHash<int, QString> fileName;  // id for file name
-    QHash<int, QString> function;  // id for function name
-    // current position
+        QHash<int, QString> libName;   // id for lib name
+        QHash<int, QString> fileName;  // id for file name
+        QHash<int, QString> function;  // id for function name
+        // current position
 //     lineType nextLineType;
 
-    QHash<int, QString> currentJumpToFile;
-    QHash<int, QString> currentJumpToFunction;
+        QHash<int, QString> currentJumpToFile;
+        QHash<int, QString> currentJumpToFunction;
 //     bool hasLineInfo;
 //     bool hasAddrInfo;
-    long long int summary;
+        long long int summary;
 
-    QTextStream *strm;
-    QString line;
+        QTextStream *strm;
+        QString line;
 //     QVector<CProfileInfo>* workCProfile;
 
-    long int num_events;
+        long int num_events;
 //     cost_events;
 //     QVector<SCallGraphEntry> callGraphBlock;
 

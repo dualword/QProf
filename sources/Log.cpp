@@ -187,24 +187,24 @@ const int Log::Init(const LogType   level, const int Number)
     NO = Number;
 
     switch(level) {
-    case OFF:
-        kdDebug(NO) << "Default LogLevel is OFF" << endl;
-        break;
-    case ERR:
-        kdDebug(NO) << "Default LogLevel is ERR" << endl;
-        break;
-    case RUN:
-        kdDebug(NO) << "Default LogLevel is RUN" << endl;
-        break;
-    case SIG:
-        kdDebug(NO) << "Default LogLevel is SIG" << endl;
-        break;
-    case DBG:
-        kdDebug(NO) << "Default LogLevel is DBG" << endl;
-        break;
-    case TRC:
-        kdDebug(NO) << "Default LogLevel is TRC" << endl;
-        break;
+        case OFF:
+            kdDebug(NO) << "Default LogLevel is OFF" << endl;
+            break;
+        case ERR:
+            kdDebug(NO) << "Default LogLevel is ERR" << endl;
+            break;
+        case RUN:
+            kdDebug(NO) << "Default LogLevel is RUN" << endl;
+            break;
+        case SIG:
+            kdDebug(NO) << "Default LogLevel is SIG" << endl;
+            break;
+        case DBG:
+            kdDebug(NO) << "Default LogLevel is DBG" << endl;
+            break;
+        case TRC:
+            kdDebug(NO) << "Default LogLevel is TRC" << endl;
+            break;
     }
 
     return 0;
@@ -247,29 +247,29 @@ const int Log::DbgLog(const char * const file,
     //add filename and line number
     char pos[30];
     snprintf(pos, sizeof(pos) - 1, "%15s(%4d) ", file, line);
-    pos[sizeof(pos)-1] = 0;
+    pos[sizeof(pos) - 1] = 0;
     result = result + " " + pos;
 
     //add kind of message
     switch(level) {
-    case ERR:
-        result += "ERR ";
-        break;
-    case SIG:
-        result += "SIG ";
-        break;
-    case RUN:
-        result += "RUN ";
-        break;
-    case DBG:
-        result += "DBG ";
-        break;
-    case TRC:
-        result += "TRC ";
-        break;
-    case OFF:
-        result += "OFF ";
-        break; //wird nicht benutzt, um compiler warnung zu vermeiden
+        case ERR:
+            result += "ERR ";
+            break;
+        case SIG:
+            result += "SIG ";
+            break;
+        case RUN:
+            result += "RUN ";
+            break;
+        case DBG:
+            result += "DBG ";
+            break;
+        case TRC:
+            result += "TRC ";
+            break;
+        case OFF:
+            result += "OFF ";
+            break; //wird nicht benutzt, um compiler warnung zu vermeiden
     };
 
     //Indent

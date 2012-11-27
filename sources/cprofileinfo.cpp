@@ -149,6 +149,7 @@ void CProfileInfo::dumpHtml(const QString& tempDir)
         for (uint i = 0; i < cn; i++) {
             stream << "<TR>";
             CProfileInfo *p = called[i];
+
 // qDebug() << p->method ;
             if (p->method == "") {
                 stream << "<TD><A HREF= \"" << tempDir << p->htmlName << "::" << p->method << ".html\"> "

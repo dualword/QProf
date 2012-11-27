@@ -14,18 +14,18 @@
 class CConfigure
 {
 //         Q_OBJECT
-public:
-    CConfigure(QWidget *parent = 0L);
-    ~CConfigure();
+    public:
+        CConfigure(QWidget *parent = 0L);
+        ~CConfigure();
 
-    const QColor& highColour() const;
+        const QColor& highColour() const;
 
-    void chooseGraphHighColour();
+        void chooseGraphHighColour();
 
-private:
-    QWidget* parentWindow;
+    private:
+        QWidget* parentWindow;
 
-    QColor graphHighColour;
+        QColor graphHighColour;
 };
 
 #endif

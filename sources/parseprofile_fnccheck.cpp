@@ -115,151 +115,151 @@ CParseProfile_fnccheck::CParseProfile_fnccheck (QTextStream& t, QVector<CProfile
             }
 
             switch (state) {
-                /*
-                 * analyze cycles detected during execution
-                 *
-                 */
-            case PROCESS_CYCLES:
-                // @@@ TODO
-                break;
-
-                /*
-                 * analyze flat profile entry
-                 *
-                 */
-            case PROCESS_FLAT_PROFILE: {
-                if (fields.count() != 7) {
+                    /*
+                     * analyze cycles detected during execution
+                     *
+                     */
+                case PROCESS_CYCLES:
+                    // @@@ TODO
                     break;
-                }
 
-                if (!fields[0].length()) {
-                    break;
-                }
-
-                if (!fields[0][0].isDigit ()) {
-                    break;
-                }
-
-                CProfileInfo *p = new CProfileInfo;
-                p->ind              = profile.count ();
-                p->cumPercent       = fields[3].toFloat ();
-                p->cumSeconds       = fields[2].toFloat ();
-                p->selfSeconds      = fields[0].toFloat ();
-                p->calls            = fields[4].toLong ();
-                p->totalMsPerCall   = fields[5].toFloat () * 1000.0;
-                p->name             = fields[6];
-
-                // p->simplifiedName will be updated in postProcessProfile()
-                p->recursive        = false;
-                p->object           = QProfWidget::getClassName (p->name);
-                p->multipleSignatures = false;              // will be updated in postProcessProfile()
-
-                int argsoff = p->name.indexOf ('(');
-
-                if (argsoff != -1) {
-                    p->method = p->name.mid (p->object.length(), argsoff - p->object.length());
-                    p->arguments  = p->name.right (p->name.length() - argsoff);
-                } else {
-                    p->method = p->name.right (p->name.length() - p->object.length());
-                }
-
-                if (p->method.startsWith ("::")) {
-                    p->method.remove (0, 2);
-                }
-
-                profile.append(*p);
-//                     int j = profile.size ();
-//                     profile.resize (j + 1);
-//                     profile.insert (j, *p);
-                break;
-            }
-
-            /*
-             * analyze MIN/MAX time per function
-             *
-             */
-            case PROCESS_MIN_MAX_TIME: {
-                // we assume that the flat profile and the min/max time profile
-                // are displayed using the same order
-                if (fields.count() != 4) {
-                    break;
-                }
-
-                if (!fields[0].length()) {
-                    break;
-                }
-
-                if (!fields[0][0].isDigit ()) {
-                    break;
-                }
-
-                curFunctionIndex = fields[0].toInt ();
-
-                if (curFunctionIndex < 0 || (uint)curFunctionIndex >= profile.count()) {
-                    fprintf (stderr, "qprof: missing flat profile entry for [%d] (line %ld)\n", curFunctionIndex, line);
-                    break;
-                }
-
-                CProfileInfo *p = &profile[curFunctionIndex];
-                p->custom.fnccheck.minMsPerCall = fields[1].toFloat() * 1000.0;
-                p->custom.fnccheck.maxMsPerCall = fields[2].toFloat() * 1000.0;
-                break;
-            }
-
-            /*
-             * analyze call graph entry
-             *
-             */
-            case PROCESS_CALL_GRAPH: {
-                if (s[0] == '"') {
-                    // found another call-graph entry
-                    processingCallers = fields.count() == 3;
-                    curFunctionIndex = fields[1].toInt ();
-                    break;
-                }
-
-                if (curFunctionIndex < 0 || (uint)curFunctionIndex >= profile.count()) {
-                    break;
-                }
-
-                if (fields[0] == "*") {
-                    // "this function does not call anyone we know"
-                    curFunctionIndex = -1;
-                    break;
-                }
-
-                // process current call-graph entry
-                CProfileInfo *p = &profile[curFunctionIndex];
-
-                for (uint i = 0; i < fields.count(); i++) {
-                    int referred = fields[i].toInt ();
-
-                    if (referred < 0 || (uint)referred >= profile.count()) {
-                        fprintf (stderr, "qprof: missing flat profile entry for [%d] (line %ld)\n", referred, line);
+                    /*
+                     * analyze flat profile entry
+                     *
+                     */
+                case PROCESS_FLAT_PROFILE: {
+                    if (fields.count() != 7) {
                         break;
                     }
 
-                    if (referred == curFunctionIndex) {
-                        p->recursive = true;
-                    } else {
-                        CProfileInfo *pi = &profile[referred];
+                    if (!fields[0].length()) {
+                        break;
+                    }
 
-                        if (processingCallers) {
-                            // "called by"
-                            if (p->callers.count() == 0 || p->callers.indexOf(pi) == -1) {
-                                p->callers.append (pi);
-                            }
+                    if (!fields[0][0].isDigit ()) {
+                        break;
+                    }
+
+                    CProfileInfo *p = new CProfileInfo;
+                    p->ind              = profile.count ();
+                    p->cumPercent       = fields[3].toFloat ();
+                    p->cumSeconds       = fields[2].toFloat ();
+                    p->selfSeconds      = fields[0].toFloat ();
+                    p->calls            = fields[4].toLong ();
+                    p->totalMsPerCall   = fields[5].toFloat () * 1000.0;
+                    p->name             = fields[6];
+
+                    // p->simplifiedName will be updated in postProcessProfile()
+                    p->recursive        = false;
+                    p->object           = QProfWidget::getClassName (p->name);
+                    p->multipleSignatures = false;              // will be updated in postProcessProfile()
+
+                    int argsoff = p->name.indexOf ('(');
+
+                    if (argsoff != -1) {
+                        p->method = p->name.mid (p->object.length(), argsoff - p->object.length());
+                        p->arguments  = p->name.right (p->name.length() - argsoff);
+                    } else {
+                        p->method = p->name.right (p->name.length() - p->object.length());
+                    }
+
+                    if (p->method.startsWith ("::")) {
+                        p->method.remove (0, 2);
+                    }
+
+                    profile.append(*p);
+//                     int j = profile.size ();
+//                     profile.resize (j + 1);
+//                     profile.insert (j, *p);
+                    break;
+                }
+
+                /*
+                 * analyze MIN/MAX time per function
+                 *
+                 */
+                case PROCESS_MIN_MAX_TIME: {
+                    // we assume that the flat profile and the min/max time profile
+                    // are displayed using the same order
+                    if (fields.count() != 4) {
+                        break;
+                    }
+
+                    if (!fields[0].length()) {
+                        break;
+                    }
+
+                    if (!fields[0][0].isDigit ()) {
+                        break;
+                    }
+
+                    curFunctionIndex = fields[0].toInt ();
+
+                    if (curFunctionIndex < 0 || (uint)curFunctionIndex >= profile.count()) {
+                        fprintf (stderr, "qprof: missing flat profile entry for [%d] (line %ld)\n", curFunctionIndex, line);
+                        break;
+                    }
+
+                    CProfileInfo *p = &profile[curFunctionIndex];
+                    p->custom.fnccheck.minMsPerCall = fields[1].toFloat() * 1000.0;
+                    p->custom.fnccheck.maxMsPerCall = fields[2].toFloat() * 1000.0;
+                    break;
+                }
+
+                /*
+                 * analyze call graph entry
+                 *
+                 */
+                case PROCESS_CALL_GRAPH: {
+                    if (s[0] == '"') {
+                        // found another call-graph entry
+                        processingCallers = fields.count() == 3;
+                        curFunctionIndex = fields[1].toInt ();
+                        break;
+                    }
+
+                    if (curFunctionIndex < 0 || (uint)curFunctionIndex >= profile.count()) {
+                        break;
+                    }
+
+                    if (fields[0] == "*") {
+                        // "this function does not call anyone we know"
+                        curFunctionIndex = -1;
+                        break;
+                    }
+
+                    // process current call-graph entry
+                    CProfileInfo *p = &profile[curFunctionIndex];
+
+                    for (uint i = 0; i < fields.count(); i++) {
+                        int referred = fields[i].toInt ();
+
+                        if (referred < 0 || (uint)referred >= profile.count()) {
+                            fprintf (stderr, "qprof: missing flat profile entry for [%d] (line %ld)\n", referred, line);
+                            break;
+                        }
+
+                        if (referred == curFunctionIndex) {
+                            p->recursive = true;
                         } else {
-                            // "calls"
-                            if (p->called.count() == 0 || p->called.indexOf(pi) == -1) {
-                                p->called.append (pi);
+                            CProfileInfo *pi = &profile[referred];
+
+                            if (processingCallers) {
+                                // "called by"
+                                if (p->callers.count() == 0 || p->callers.indexOf(pi) == -1) {
+                                    p->callers.append (pi);
+                                }
+                            } else {
+                                // "calls"
+                                if (p->called.count() == 0 || p->called.indexOf(pi) == -1) {
+                                    p->called.append (pi);
+                                }
                             }
                         }
                     }
-                }
 
-                curFunctionIndex = -1;
-            }
+                    curFunctionIndex = -1;
+                }
             }
         }
     }

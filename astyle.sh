@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
+set -e
+ 
 export ARTISTIC_STYLE_OPTIONS="\
 --mode=c \
 --style=k&r \
@@ -10,12 +12,13 @@ export ARTISTIC_STYLE_OPTIONS="\
 --break-blocks \
 --pad-oper \
 --add-brackets \
-#--brackets=attach \
 --convert-tabs \
+--formatted \
 --lineend=linux"
 
-astyle $(find . -name "*.cpp")
-astyle $(find . -name "*.h")
+astyle $ARTISTIC_STYLE_OPTIONS $(find . -name "*.cpp")
+astyle $ARTISTIC_STYLE_OPTIONS $(find . -name "*.c")
+astyle $ARTISTIC_STYLE_OPTIONS $(find . -name "*.h")
 
 rm -if $(find . -name "*.orig")
 rm -if $(find . -name "*~")

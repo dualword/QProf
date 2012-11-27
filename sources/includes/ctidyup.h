@@ -27,14 +27,14 @@
 class CTidyUp
 {
 //           Q_OBJECT
-public:
-    CTidyUp(QString& dir);
-    virtual ~CTidyUp();
-    void removeDir();
+    public:
+        CTidyUp(QString& dir);
+        virtual ~CTidyUp();
+        void removeDir();
 
-private:
-    QDir* listDir;
-    QString url;
+    private:
+        QDir* listDir;
+        QString url;
 };
 
 #endif

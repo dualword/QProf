@@ -3,7 +3,7 @@
 #ifndef ICON_H
 #define ICON_H
 
-static char *appIcon[]= {
+static char *appIcon[] = {
     (char*)"32 32 18 1",
     (char*)". c None",
     (char*)"b c #000000",

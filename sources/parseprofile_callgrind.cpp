@@ -60,10 +60,12 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 //             break;
 
         if (line.length() == 0) {
-            if (hasIdInfo == false)
+            if (hasIdInfo == false) {
                 continue;
+            }
 
             func = findFunction(profile, actualFuncId);
+
             if (func == NULL) {
                 continue;
             }
@@ -91,6 +93,7 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             }
 
             func = findFunction(profile, actualFuncId);
+
             if (func == NULL) {
                 continue;
             }
@@ -100,12 +103,15 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             unsigned long sampl;
 
             int pos = line.lastIndexOf(" ");
-            if (pos > 0 )
-                num = line .mid(pos+1);
-            else
+
+            if (pos > 0 ) {
+                num = line .mid(pos + 1);
+            } else {
                 continue;
+            }
 
             sampl = num.toULong(&io);
+
             if (io == false) {
                 qDebug() << QString("Invalid line '%1'").arg(line);
                 continue;
@@ -116,273 +122,307 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
             // go through after big switch
         } else {
             switch(c) {
-            case 'f':
-                // fl=, fi=, fe=
-                if (line.startsWith("fl=") || line.startsWith("fi=") || line.startsWith("fe=")) {
-                    int pos = line.indexOf(" ");
-                    actualFileId = extractId(line);
-                    actualCalledFileId = actualFileId;
+                case 'f':
 
-                    if (pos > 0) {
-                        if (fileName.find(actualFileId) == fileName.end()) {// not exististing
-                            fileName.insert(actualFileId, line.mid( pos + 1));
-                        }
-                    }
+                    // fl=, fi=, fe=
+                    if (line.startsWith("fl=") || line.startsWith("fi=") || line.startsWith("fe=")) {
+                        int pos = line.indexOf(" ");
+                        actualFileId = extractId(line);
+                        actualCalledFileId = actualFileId;
 
-                    continue;
-                }
-
-                // fn=
-                if (line.startsWith("fn=")) {
-                    int pos = line.indexOf(QRegExp("[\\t\\s]"));
-                    actualFuncId = extractId(line);
-                    if (actualFuncId == -1) continue;
-
-                    if (pos > 0) {
-                        if (function.find(actualFuncId) == function.end()) { // not exististing
-                            QString nm=line.mid( pos + 1);
-                            if (nm.length() >0) {
-                                function.insert(actualFuncId, nm);
-//                                 qDebug() << nm << actualFuncId;
+                        if (pos > 0) {
+                            if (fileName.find(actualFileId) == fileName.end()) {// not exististing
+                                fileName.insert(actualFileId, line.mid( pos + 1));
                             }
                         }
-                    }
 
-                    func = make_function(profile);
-
-
-                    if (func == NULL) {
                         continue;
                     }
-                    hasIdInfo = true;
 
-#if 0
-                    // on a new function, update status
-                    int progress = (int)(100.0 * file.current() / file.len() + .5);
+                    // fn=
+                    if (line.startsWith("fn=")) {
+                        int pos = line.indexOf(QRegExp("[\\t\\s]"));
+                        actualFuncId = extractId(line);
 
-                    if (progress != statusProgress) {
-                        statusProgress = progress;
-
-                        /* When this signal is connected, it most probably
-                         * should lead to GUI update. Thus, when multiple
-                         * "long operations" (like file loading) are in progress,
-                         * this can temporarly switch to another operation.
-                         */
-                        loadProgress(statusProgress);
-                    }
-
-#endif
-                    continue;
-                }
-
-                break;
-
-            case 'c':
-                // cob=
-                if (line.startsWith("cob=")) {
-                    int pos = line.indexOf(" ");
-                    actualCalledLibId = extractId(line);
-                    if (pos > 0) {
-                        if (libName.find(actualCalledLibId) == libName.end()) // not exististing
-                            libName.insert(actualCalledLibId, line.mid( pos + 1));
-                    }
-                    continue;
-                }
-
-                // cfi= / cfl=
-                if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
-                    int pos = line.indexOf(" ");
-                    actualCalledFileId = extractId(line);
-                    if (pos > 0) {
-                        if (fileName.find(actualCalledFileId) == fileName.end()) // not exististing
-                            fileName.insert(actualCalledFileId, line.mid( pos + 1));
-                    }
-                    continue;
-                }
-
-                // cfn=
-                if (line.startsWith("cfn=")) {
-                    int pos = line.indexOf(QRegExp("[\\t\\s]"));
-                    actualCalledFuncId = extractId(line);
-                    if (actualCalledFuncId == -1) continue;
-//                    if (actualCalledFuncId== 1760)qDebug() << line << pos;
-
-                    if (pos > 0) {
-                        if (function.find(actualCalledFuncId) == function.end()) { // not exististing
-                            QString nm=line.mid( pos + 1);
-                            if (nm.length() >0) {
-                                function.insert(actualCalledFuncId, nm);
-//                                 qDebug() << nm << actualCalledFuncId;
-                            }
+                        if (actualFuncId == -1) {
+                            continue;
                         }
-                    }
 
-                    func = make_CalledFunction(profile);
-
-                    continue;
-                }
-
-                // calls=
-                if (line.startsWith("calls=")) {
-                    // ignore long lines...
-//                     line.stripUInt64(currentCallCount);
-                    func = findFunction(profile, actualFuncId);
-                    if (func != NULL) {
-                        CProfileInfo* cf;
-                        cf = findFunction(profile, actualCalledFuncId);
-//                         if (cf==NULL) qDebug() << line << actualCalledFuncId;
-                        QString num;
-                        int pos = line.indexOf("=");
                         if (pos > 0) {
-                            int posSpace =line.indexOf(" ", pos + 1);
-                            if (posSpace > 1)
-                                num = line.mid(pos + 1, posSpace-pos-1);
-                            else
-                                num = line.mid(pos + 1);
-// 
-                            for (int i= 0; i <func->called.count(); i++){
-                                
-                                if (func->called.at(i)->name == function[actualCalledFuncId]){
-//                                     qDebug() << "called func id: "<< actualCalledFuncId << "calls" << num << "called" << func->called.at(i)->name;
-                                    func->numCalls[i] = num.toULongLong();
-                                    func->called.at(i)->calls = num.toULongLong();
-                                    
+                            if (function.find(actualFuncId) == function.end()) { // not exististing
+                                QString nm = line.mid( pos + 1);
+
+                                if (nm.length() > 0) {
+                                    function.insert(actualFuncId, nm);
+//                                 qDebug() << nm << actualFuncId;
                                 }
                             }
-
                         }
-                    }
-                    continue;
-                }
 
-                // cmd:
-                if (line.startsWith("cmd:")) {
-                    QString command = QString(line).trimmed();
-                    continue;
-                }
+                        func = make_function(profile);
 
-                // creator:
-                if (line.startsWith("creator:")) {
-                    // ignore ...
-                    continue;
-                }
 
-                break;
+                        if (func == NULL) {
+                            continue;
+                        }
 
-            case 'j':
-                // jcnd=
-                if (line.startsWith("jcnd=")) {
-                    bool valid;
-                    continue;
-                }
+                        hasIdInfo = true;
 
-                if (line.startsWith("jump=")) {
-                    bool valid;
-                    continue;
-                }
+#if 0
+                        // on a new function, update status
+                        int progress = (int)(100.0 * file.current() / file.len() + .5);
 
-                // jfi=
-                if (line.startsWith("jfi=")) {
-                    continue;
-                }
+                        if (progress != statusProgress) {
+                            statusProgress = progress;
 
-                // jfn=
-                if (line.startsWith("jfn=")) {
-                    continue;
-                }
+                            /* When this signal is connected, it most probably
+                             * should lead to GUI update. Thus, when multiple
+                             * "long operations" (like file loading) are in progress,
+                             * this can temporarly switch to another operation.
+                             */
+                            loadProgress(statusProgress);
+                        }
 
-                break;
-
-            case 'o':
-                // ob=
-                if (line.startsWith("ob=")) {
-                    int pos = line.indexOf(" ");
-                    actualLibId = extractId(line);
-
-                    actualCalledLibId = actualLibId;
-                    if (pos > 0) {
-                        if (libName.find(actualLibId) == libName.end()) // not exististing
-                            libName.insert(actualLibId, line.mid( pos + 1));
+#endif
+                        continue;
                     }
 
+                    break;
+
+                case 'c':
+
+                    // cob=
+                    if (line.startsWith("cob=")) {
+                        int pos = line.indexOf(" ");
+                        actualCalledLibId = extractId(line);
+
+                        if (pos > 0) {
+                            if (libName.find(actualCalledLibId) == libName.end()) { // not exististing
+                                libName.insert(actualCalledLibId, line.mid( pos + 1));
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    // cfi= / cfl=
+                    if (line.startsWith("cfl=") || line.startsWith("cfi=")) {
+                        int pos = line.indexOf(" ");
+                        actualCalledFileId = extractId(line);
+
+                        if (pos > 0) {
+                            if (fileName.find(actualCalledFileId) == fileName.end()) { // not exististing
+                                fileName.insert(actualCalledFileId, line.mid( pos + 1));
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    // cfn=
+                    if (line.startsWith("cfn=")) {
+                        int pos = line.indexOf(QRegExp("[\\t\\s]"));
+                        actualCalledFuncId = extractId(line);
+
+                        if (actualCalledFuncId == -1) {
+                            continue;
+                        }
+
+//                    if (actualCalledFuncId== 1760)qDebug() << line << pos;
+
+                        if (pos > 0) {
+                            if (function.find(actualCalledFuncId) == function.end()) { // not exististing
+                                QString nm = line.mid( pos + 1);
+
+                                if (nm.length() > 0) {
+                                    function.insert(actualCalledFuncId, nm);
+//                                 qDebug() << nm << actualCalledFuncId;
+                                }
+                            }
+                        }
+
+                        func = make_CalledFunction(profile);
+
+                        continue;
+                    }
+
+                    // calls=
+                    if (line.startsWith("calls=")) {
+                        // ignore long lines...
+//                     line.stripUInt64(currentCallCount);
+                        func = findFunction(profile, actualFuncId);
+
+                        if (func != NULL) {
+                            CProfileInfo* cf;
+                            cf = findFunction(profile, actualCalledFuncId);
+//                         if (cf==NULL) qDebug() << line << actualCalledFuncId;
+                            QString num;
+                            int pos = line.indexOf("=");
+
+                            if (pos > 0) {
+                                int posSpace = line.indexOf(" ", pos + 1);
+
+                                if (posSpace > 1) {
+                                    num = line.mid(pos + 1, posSpace - pos - 1);
+                                } else {
+                                    num = line.mid(pos + 1);
+                                }
+
+//
+                                for (int i = 0; i < func->called.count(); i++) {
+
+                                    if (func->called.at(i)->name == function[actualCalledFuncId]) {
+//                                     qDebug() << "called func id: "<< actualCalledFuncId << "calls" << num << "called" << func->called.at(i)->name;
+                                        func->numCalls[i] = num.toULongLong();
+                                        func->called.at(i)->calls = num.toULongLong();
+
+                                    }
+                                }
+
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    // cmd:
+                    if (line.startsWith("cmd:")) {
+                        QString command = QString(line).trimmed();
+                        continue;
+                    }
+
+                    // creator:
+                    if (line.startsWith("creator:")) {
+                        // ignore ...
+                        continue;
+                    }
+
+                    break;
+
+                case 'j':
+
+                    // jcnd=
+                    if (line.startsWith("jcnd=")) {
+                        bool valid;
+                        continue;
+                    }
+
+                    if (line.startsWith("jump=")) {
+                        bool valid;
+                        continue;
+                    }
+
+                    // jfi=
+                    if (line.startsWith("jfi=")) {
+                        continue;
+                    }
+
+                    // jfn=
+                    if (line.startsWith("jfn=")) {
+                        continue;
+                    }
+
+                    break;
+
+                case 'o':
+
+                    // ob=
+                    if (line.startsWith("ob=")) {
+                        int pos = line.indexOf(" ");
+                        actualLibId = extractId(line);
+
+                        actualCalledLibId = actualLibId;
+
+                        if (pos > 0) {
+                            if (libName.find(actualLibId) == libName.end()) { // not exististing
+                                libName.insert(actualLibId, line.mid( pos + 1));
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    break;
+
+                case '#':
                     continue;
-                }
 
-                break;
+                case 't':
 
-            case '#':
-                continue;
+                    // totals:
+                    if (line.startsWith("totals:")) {
+                        continue;
+                    }
 
-            case 't':
-                // totals:
-                if (line.startsWith("totals:")) {
-                    continue;
-                }
+                    // thread:
+                    if (line.startsWith("thread:")) {
+                        continue;
+                    }
 
-                // thread:
-                if (line.startsWith("thread:")) {
-                    continue;
-                }
+                    // timeframe (BB):
+                    if (line.startsWith("timeframe (BB):")) {
+                        continue;
+                    }
 
-                // timeframe (BB):
-                if (line.startsWith("timeframe (BB):")) {
-                    continue;
-                }
+                    break;
 
-                break;
+                case 'd':
 
-            case 'd':
-                // desc:
-                if (line.startsWith("desc:")) {
-                    continue;
-                }
+                    // desc:
+                    if (line.startsWith("desc:")) {
+                        continue;
+                    }
 
-                break;
+                    break;
 
-            case 'e':
-                // events:
-                if (line.startsWith("events:")) {
-                    continue;
-                }
+                case 'e':
 
-                // event:<name>[=<formula>][:<long name>]
-                if (line.startsWith("event:")) {
-                    continue;
-                }
+                    // events:
+                    if (line.startsWith("events:")) {
+                        continue;
+                    }
 
-                break;
+                    // event:<name>[=<formula>][:<long name>]
+                    if (line.startsWith("event:")) {
+                        continue;
+                    }
 
-            case 'p':
-                // part:
-                if (line.startsWith("part:")) {
-                    continue;
-                }
+                    break;
 
-                // pid:
-                if (line.startsWith("pid:")) {
-                    continue;
-                }
+                case 'p':
 
-                // positions:
-                if (line.startsWith("positions:")) {
-                    continue;
-                }
+                    // part:
+                    if (line.startsWith("part:")) {
+                        continue;
+                    }
 
-                break;
+                    // pid:
+                    if (line.startsWith("pid:")) {
+                        continue;
+                    }
 
-            case 'v':
-                // version:
-                if (line.startsWith("version:")) {
-                    // ignore for now
-                    continue;
-                }
+                    // positions:
+                    if (line.startsWith("positions:")) {
+                        continue;
+                    }
 
-                break;
+                    break;
 
-            case 's':
-                // summary:
-                if (line.startsWith("summary:")) {
-                    summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
+                case 'v':
+
+                    // version:
+                    if (line.startsWith("version:")) {
+                        // ignore for now
+                        continue;
+                    }
+
+                    break;
+
+                case 's':
+
+                    // summary:
+                    if (line.startsWith("summary:")) {
+                        summary =  line.mid(line.indexOf(" ") + 1).toLongLong();
 //                     if (!mapping) {
 //                         error(QString("No event line found. Skipping file"));
 //                         delete _part;
@@ -390,34 +430,36 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 //                     }
 //
 //                     _part->totals()->set(mapping, line);
-                    continue;
-                }
+                        continue;
+                    }
 
-            case 'r':
-                // rcalls= (deprecated)
-                if (line.startsWith("rcalls=")) {
-                    // ignored
-                    // handle like normal calls: we need the sum of call count
-                    // recursive cost is discarded in cycle detection
+                case 'r':
+
+                    // rcalls= (deprecated)
+                    if (line.startsWith("rcalls=")) {
+                        // ignored
+                        // handle like normal calls: we need the sum of call count
+                        // recursive cost is discarded in cycle detection
 //                     line.stripUInt64(currentCallCount);
 //                     nextLineType = CallCost;
 //
 //                     warning(QString("Old file format using deprecated 'rcalls'"));
-                    continue;
-                }
+                        continue;
+                    }
 
-                break;
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
 
 //             qDebug() << QString("Invalid line '%1'").arg(line);
 //             continue;
         }
 
-        if (func == NULL)
+        if (func == NULL) {
             continue;
+        }
     }
 
     cleanPointers(profile);
@@ -428,19 +470,21 @@ CParseProfile_callgrind::CParseProfile_callgrind (QTextStream& strm, QVector<CPr
 
 }
 
-long long CParseProfile_callgrind::extractId(const QString& ln) {
+long long CParseProfile_callgrind::extractId(const QString& ln)
+{
     int posId;
     long long id;
     posId = ln.indexOf(QRegExp("(\\d+)"));
+
     if (posId == -1) {
         qDebug() << "id is wrong" << ln;
         return -1;
-    }
-    else {
-        QString idStr = ln.mid(posId, ln.indexOf(")")-posId);
+    } else {
+        QString idStr = ln.mid(posId, ln.indexOf(")") - posId);
         id = idStr.toLongLong();
 //         qDebug() << line << id;
     }
+
     return id;
 }
 
@@ -453,16 +497,16 @@ void  CParseProfile_callgrind::cleanPointers(QVector<CProfileInfo>& workCProfile
 
     p = findFunction(workCProfile, actualFuncId);
 
-    for(int i=0; i< p->called.count(); ++i) {
-        for(int j=i+1; j< p->called.count(); ) {
+    for(int i = 0; i < p->called.count(); ++i) {
+        for(int j = i + 1; j < p->called.count(); ) {
             if (p->called[i] == p->called[j]) {
                 p->numCalls[i] += p->numCalls[j];
                 p->called.remove(j);
                 p->numCalls.remove(j);
 //                 j--;
-            }
-            else
+            } else {
                 j++;
+            }
         }
     }
 }
@@ -493,6 +537,7 @@ bool CParseProfile_callgrind::buildGraph(CProfileInfo* p, bool prim)
     e->primary = prim;
 
     e->name = p->name;
+
     // if we got a call graph block without a primary function name,
     // drop it completely.
     if (e->name == NULL || e->name.length() == 0) {
@@ -501,7 +546,7 @@ bool CParseProfile_callgrind::buildGraph(CProfileInfo* p, bool prim)
     }
 
     if (prim == false) {
-        for (int i=0; i< callGraphBlock.count(); i++) {
+        for (int i = 0; i < callGraphBlock.count(); i++) {
             if (p->name == callGraphBlock[i].name) {
                 recFound = true;
                 break;
@@ -535,17 +580,20 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
 //         }
         return p;
     }
+
 //
     p = new CProfileInfo();// Function(id, name);
     QString fName = fileName[actualFileId];
     p->fileName = fName;
 
     QString lName = libName[actualLibId];
+
     if (lName.length() > 0) {
         p->libName = lName;
     }
 
     QString funN = function[actualFuncId];
+
     if (funN.length() == 0) {
         delete p;
         return NULL;
@@ -566,9 +614,9 @@ CProfileInfo* CParseProfile_callgrind::make_function(QVector<CProfileInfo>& work
     if ( pos > 0) {
         p->object = p->name.left(pos);
         p->method = p->name.mid (pos + 2);
-    }
-    else
+    } else {
         p->method = p->name;
+    }
 
 
     workCProfile.append(*p);
@@ -593,12 +641,13 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
 //         cf->name = function[actualCalledFuncId];
 
         f = findFunction(workCProfile, actualFuncId);
-        
-         
+
+
         if (f != NULL) {
             bool found = false;
-            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
-                if ((*ic)->name == cf->name){
+
+            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic) {
+                if ((*ic)->name == cf->name) {
 //                     cf->recursive = true;
 //                     beforePrimary = false;
                     found = true;
@@ -635,17 +684,19 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
     cf = new CProfileInfo();// Function(id, name);
 
     QString fname = fileName[actualCalledFileId];
-    cf->fileName =fname;
+    cf->fileName = fname;
     cf->called.clear();
     cf->callers.clear();
     cf->numCalls.clear();
 
     QString lName = libName[actualCalledLibId];
+
     if (lName.length() > 0) {
         cf->libName = lName;
     }
 
-    QString nFunc =function[actualCalledFuncId];
+    QString nFunc = function[actualCalledFuncId];
+
     if (nFunc.length() == 0) {
         delete cf;
         return NULL;
@@ -662,36 +713,38 @@ CProfileInfo* CParseProfile_callgrind::make_CalledFunction(QVector<CProfileInfo>
     if ( pos > 0) {
         cf->object = cf->name.left(pos);
         cf->method = cf->name.mid (pos + 2);
-    }
-    else
+    } else {
         cf->method = cf->name;
+    }
 
     bool beforePrimary = true;
 
     f = findFunction(workCProfile, actualFuncId);
-    if (f != NULL) {
-         bool found = false;
-            for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic){
-                if ((*ic)->name == cf->name){
-                    cf->recursive = true;
-                    beforePrimary = false;
-                    found = true;
-                    break;
-                }
-            }
 
-            if (!beforePrimary) {
-                if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
-                    f->callers.append (cf);
-//                     f->numCalls.append(0);
-                }
-            } else {
-                if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
-                    f->called.append ( cf);
-                    f->numCalls.append(0);
-                }
+    if (f != NULL) {
+        bool found = false;
+
+        for (QVector<CProfileInfo*>::iterator ic = f->called.begin(); ic != f->called.end(); ++ic) {
+            if ((*ic)->name == cf->name) {
+                cf->recursive = true;
+                beforePrimary = false;
+                found = true;
+                break;
             }
-            
+        }
+
+        if (!beforePrimary) {
+            if (f->callers.count() == 0 || f->callers.indexOf(cf) == -1) {
+                f->callers.append (cf);
+//                     f->numCalls.append(0);
+            }
+        } else {
+            if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
+                f->called.append ( cf);
+                f->numCalls.append(0);
+            }
+        }
+
 //         if (f->called.count() == 0 || f->called.indexOf(cf) == -1) {
 //             f->called.append(cf);
 //             f->numCalls.append(0);

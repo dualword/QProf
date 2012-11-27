@@ -35,7 +35,7 @@
  * 1.1.1      08 aug 2012    Q3Support removed completely grom call-graph.ui
  * 1.2.0      09 aug 2012    onDblClick added to select of file on overview page
  * 1.2.1      12 aug 2012    additional popup window for help about colorizing
- * 1.2.2      19 aug 2012    bugfixes callgrind 
+ * 1.2.2      19 aug 2012    bugfixes callgrind
  *
  */
 
@@ -271,10 +271,11 @@ void QProfWidget::about()
 
 void QProfWidget::changeDiagram()
 {
-    if (radioButton->isChecked() == true)
+    if (radioButton->isChecked() == true) {
         percentDiag = true;
-    else
+    } else {
         percentDiag = false;
+    }
 
 //     qDebug() << "change" << percentDiag;
     fillOverviewProfileList ();
@@ -291,8 +292,9 @@ int QProfWidget::fileDetection(const QString &fname)
     file.setFileName(fname);
     ret = -1;
 
-    if (file.open(QIODevice::ReadOnly) == false)
+    if (file.open(QIODevice::ReadOnly) == false) {
         return ret;
+    }
 
     QDataStream in(&file);    // read the data serialized from the file
     in.readRawData(ba, 512);
@@ -303,45 +305,51 @@ int QProfWidget::fileDetection(const QString &fname)
         return FORMAT_ELF;
     }
 
-    for (int i=0; i<128; i++) {
+    for (int i = 0; i < 128; i++) {
         if ( ba[i] == 0x0 || ba[i] > 0x7f) {
             return -2;
         }
     }
 
-    if (file.open(QIODevice::ReadWrite) == false)
+    if (file.open(QIODevice::ReadWrite) == false) {
         return ret;
+    }
 
     // directly from gprof and the gmon.out file
     QFileInfo finfo (fname);
-    if (finfo.isExecutable ())
+
+    if (finfo.isExecutable ()) {
         return ret;
+    }
 
     QString line;
     QTextStream t (&file);
 
     num = 0;
+
     while (!t.atEnd()) {
         line = t.readLine(256);
 
-        if (line.indexOf("callgrind")>=0) {
+        if (line.indexOf("callgrind") >= 0) {
             ret = FORMAT_CALLGRIND;
             break;
         }
 
-        if (line.indexOf("Flat profile") >=0) {
+        if (line.indexOf("Flat profile") >= 0) {
             ret = FORMAT_GPROF;
             break;
         }
 
-        if ((line.indexOf("local") >=0) && (line.indexOf("total") >=0)) {
+        if ((line.indexOf("local") >= 0) && (line.indexOf("total") >= 0)) {
             ret = FORMAT_FNCCHECK;
             break;
         }
 
         num++;
-        if (num > 10)
+
+        if (num > 10) {
             break;
+        }
     }
 
     file.close();
@@ -355,8 +363,9 @@ void QProfWidget::toggleTemplateAbbrev (bool stste)
     mAbbrevTemplates = stste;// mAbbrevTemplates ? false : true;
     actionAbbreviate_C_Templates->setChecked (mAbbrevTemplates);
 
-    if(pInfo.size() == 0)
+    if(pInfo.size() == 0) {
         return;
+    }
 
     if (pInfo[selectedProfileNum].mProfile.count ()) {
         postProcessProfile (); // regenerate simplified names
@@ -410,21 +419,21 @@ void QProfWidget::prepareProfileView (QTreeWidget *view, bool rootIsDecorated, s
     view->setColumnCount(0);
 
     switch (profiler) {
-    case FORMAT_GPROF:
-        vPtr = &prof_columns;
-        break;
+        case FORMAT_GPROF:
+            vPtr = &prof_columns;
+            break;
 
-    case FORMAT_FNCCHECK:
-        vPtr = &func_columns;
-        break;
+        case FORMAT_FNCCHECK:
+            vPtr = &func_columns;
+            break;
 
-    case FORMAT_POSE:
-        vPtr = &pose_columns;
-        break;
+        case FORMAT_POSE:
+            vPtr = &pose_columns;
+            break;
 
-    case FORMAT_CALLGRIND:
-        vPtr = &pose_columns;
-        break;
+        case FORMAT_CALLGRIND:
+            vPtr = &pose_columns;
+            break;
     }
 
     view->setHeaderLabels(*vPtr);
@@ -544,7 +553,7 @@ void QProfWidget::selectFileName(const QString& name)
 
     for(int num = 0; num < actFileSelect.count(); ++num) {
 //         qDebug() << (*actFileSelect.at(num)).text();
-        if ((*actFileSelect.at(num)).text().indexOf(name) >=0) {
+        if ((*actFileSelect.at(num)).text().indexOf(name) >= 0) {
             selectedProfileNum = num;
             actFileSelect.at(num)->setChecked (true);
 
@@ -552,6 +561,7 @@ void QProfWidget::selectFileName(const QString& name)
             break;
         }
     }
+
     mTabs->setCurrentIndex(1); // next tab
 }
 
@@ -592,6 +602,7 @@ void QProfWidget::selectFile (QAction* act)
     for (unsigned int i = 0; i < pInfo[selectedProfileNum].mProfile.size (); i++) {
         (pInfo[selectedProfileNum].mProfile[i]).dumpHtml(processName);
     }
+
 #endif
 
     // fill lists
@@ -714,18 +725,19 @@ void QProfWidget::createToolBars()
 void QProfWidget::openDialogFile ()
 {
     int addPos = 0;
+
     // customize the Open File dialog: we add
     // a few widgets at the end which allow the user
     // to give us a hint at which profiler the results
     // file comes from (GNU gprof, Function Check, Palm OS Emulator)
     if (filelist.count() > 0) {
-        if (QMessageBox::question(this, "Clean", "Do you want to clean the existing list?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes) {
+        if (QMessageBox::question(this, "Clean", "Do you want to clean the existing list?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
             selectedProfileNum = 0;
             filelist.clear();
             pInfo.resize(0);
-        }
-        else
+        } else {
             addPos = pInfo.size();
+        }
     }
 
     QFileDialog fd (this, tr ("Select a profiling results file(s)"), mCurDir.absolutePath());
@@ -779,7 +791,7 @@ void QProfWidget::openFileList (const QStringList &filenames)
 {
     int sz = filenames.count();
 
-    for (int i= 0; i< sz; ++i) {
+    for (int i = 0; i < sz; ++i) {
         selectedProfileNum = i;
         openFile (filenames[i]);
     }
@@ -836,7 +848,7 @@ void QProfWidget::openFile (const QString &filename)
     // if we are going to compare results, save the previous results and
     // remove any previously deleted entry
 
-    pInfo.resize(currentpInfoSize+1);
+    pInfo.resize(currentpInfoSize + 1);
 
     pInfo[currentpInfoSize].mProfile.clear ();
 
@@ -888,16 +900,17 @@ void QProfWidget::openFile (const QString &filename)
     QUrl url (filename);
     QString schem;
 
-    if (isExec == true )
+    if (isExec == true ) {
         schem = "file";
-    else if (sLastFileFormat == FORMAT_GPROF)
+    } else if (sLastFileFormat == FORMAT_GPROF) {
         schem = "file-gprof";
-    else if (sLastFileFormat == FORMAT_FNCCHECK)
+    } else if (sLastFileFormat == FORMAT_FNCCHECK) {
         schem = "file-fnccheck";
-    else if (sLastFileFormat == FORMAT_CALLGRIND)
+    } else if (sLastFileFormat == FORMAT_CALLGRIND) {
         schem = "file-callgrind";
-    else
+    } else {
         schem = "file-pose";
+    }
 
     url.setScheme (schem);
 
@@ -966,8 +979,9 @@ void QProfWidget::postProcessProfile ()
     // After that, we check every function/method to see if it
     // has multiple signatures. We mark entries with multiple signatures
     // so that we can display the arguments only when needed
-    if (pInfo.size() == 0)
+    if (pInfo.size() == 0) {
         return;
+    }
 
     pInfo[selectedProfileNum].mClasses.resize (0);
     uint i, j;
@@ -1102,8 +1116,9 @@ void QProfWidget::fillHierProfileList ()
 void QProfWidget::fillHierarchy ( CProfileViewItem *item, CProfileInfo *parent, QVector<CProfileInfo *> &addedEntries, int &count)
 {
     for (uint i = 0; i < parent->called.count(); ++i) {
-        if (parent->called[i] == NULL)
+        if (parent->called[i] == NULL) {
             break;
+        }
 
 //         qDebug() << parent->called[i]->name;
 
@@ -1128,6 +1143,7 @@ void QProfWidget::fillHierarchy ( CProfileViewItem *item, CProfileInfo *parent, 
 void QProfWidget::fillObjsProfileList ()
 {
     objItems.clear();
+
     // create all toplevel elements and their descendants
     for (uint i = 0; i < pInfo[selectedProfileNum].mClasses.count (); i++) {
         CProfileViewItem *parent = new CProfileViewItem (mObjs, NULL);
@@ -1172,7 +1188,7 @@ void QProfWidget::fillOverviewProfileList ()
 // mBarPlot->setAlternatingRowColors(true);
 //     mBarPlot->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    QLinearGradient bg(0,0,0,1);
+    QLinearGradient bg(0, 0, 0, 1);
     bg.setCoordinateMode(QGradient::ObjectBoundingMode);
     bg.setColorAt(1, Qt::white);
     bg.setColorAt(0.5, QColor(0xccccff));
@@ -1181,16 +1197,20 @@ void QProfWidget::fillOverviewProfileList ()
 
     QStringList names;
     names = filelist;
-    for (QStringList::iterator in=names.begin(); in!= names.end(); ++in) {
+
+    for (QStringList::iterator in = names.begin(); in != names.end(); ++in) {
         int pos;
         pos = (*in).lastIndexOf("/"); // short form name
-        if ( pos > 0)
-            (*in) = (*in).mid(pos+1);
+
+        if ( pos > 0) {
+            (*in) = (*in).mid(pos + 1);
+        }
     }
 
     if (fCount > 0) {
         float maxVal;
         maxVal = 0.0;
+
         if (itemModel != NULL) {
             delete itemModel;
             itemModel = NULL;
@@ -1204,18 +1224,21 @@ void QProfWidget::fillOverviewProfileList ()
             float vol;
             int i;
             float sumInFile = 0.0;
+
             for (i = 0; i < pInfo[j].mProfile.count(); i++) { // raws
                 if (percentDiag == true) {
                     vol = pInfo[j].mProfile[i].cumPercent;
-                }
-                else {
+                } else {
                     vol = pInfo[j].mProfile[i].selfSeconds;
                     sumInFile += vol;
                 }
             }
 
             if (percentDiag == false) {
-                if (maxVal < sumInFile) maxVal = sumInFile;
+                if (maxVal < sumInFile) {
+                    maxVal = sumInFile;
+                }
+
 //                 qDebug() << "max seconds, sum:" << maxVal;
             }
         }
@@ -1225,45 +1248,54 @@ void QProfWidget::fillOverviewProfileList ()
             int i;
 
             for (i = 0; i < MAX_ROWS; i++) { // raws
-                itemModel->setData(itemModel->index(i,j), 0); // init
+                itemModel->setData(itemModel->index(i, j), 0); // init
             }
 
             i = 0;
-            for (int b=0; (b < pInfo[j].mProfile.count()) && (i < MAX_ROWS); b++) {
+
+            for (int b = 0; (b < pInfo[j].mProfile.count()) && (i < MAX_ROWS); b++) {
                 if (percentDiag == true) {
                     vol = pInfo[j].mProfile[b].cumPercent;
-                }
-                else {
+                } else {
                     vol = pInfo[j].mProfile[b].selfSeconds;
                 }
 
-                if (vol> 0) {
+                if (vol > 0) {
                     float percent = pInfo[j].mProfile[b].cumPercent;
                     const QModelIndex index(itemModel->index(i, j));
+
                     if (percent < 1.0) {
                         itemModel->setData(index, Qt::white, Qt::BackgroundRole);
                     }
+
                     if (percent >= 1.0 && percent < 5.0) {
                         itemModel->setData(index, Qt::green, Qt::BackgroundRole);
                     }
-                    if (percent >=5.0 && percent < 10.0) {
+
+                    if (percent >= 5.0 && percent < 10.0) {
                         itemModel->setData(index, Qt::darkGreen, Qt::BackgroundRole);
                     }
-                    if (percent >=10.0 && percent < 15.0) {
+
+                    if (percent >= 10.0 && percent < 15.0) {
                         itemModel->setData(index, Qt::blue, Qt::BackgroundRole);
                     }
-                    if (percent >=15.0 && percent < 25.0) {
+
+                    if (percent >= 15.0 && percent < 25.0) {
                         itemModel->setData(index, Qt::darkBlue, Qt::BackgroundRole);
                     }
-                    if (percent>=25.0 && percent < 35.0) {
+
+                    if (percent >= 25.0 && percent < 35.0) {
                         itemModel->setData(index, Qt::yellow, Qt::BackgroundRole);
                     }
-                    if (percent>=35.0 && percent < 45.0) {
+
+                    if (percent >= 35.0 && percent < 45.0) {
                         itemModel->setData(index, Qt::darkYellow, Qt::BackgroundRole);
                     }
-                    if (percent>=45.0 && percent < 65.0) {
+
+                    if (percent >= 45.0 && percent < 65.0) {
                         itemModel->setData(index, Qt::red, Qt::BackgroundRole);
                     }
+
                     if (percent >= 65.0) {
                         itemModel->setData(index, Qt::darkRed, Qt::BackgroundRole);
                     }
@@ -1277,12 +1309,15 @@ void QProfWidget::fillOverviewProfileList ()
         }
 
         if (percentDiag == false) {
-            if (maxVal < 1.0)
+            if (maxVal < 1.0) {
                 mBarPlot->axisY()->setRanges(0, 1);
-            else
+            } else {
                 mBarPlot->axisY()->setRanges(0, maxVal);
+            }
+
             mBarPlot->setBarScale(0.5);
         }
+
         mBarPlot->setModel(itemModel);
     }
 
@@ -1435,15 +1470,15 @@ void QProfWidget::doPrint ()
     cur = mTabs->currentIndex();
 
     switch (cur) {
-    case 0:
-        view = mFlat;
-        break;
-    case 1:
-        view = mHier;
-        break;
-    default:
-        view = mObjs;
-        break;
+        case 0:
+            view = mFlat;
+            break;
+        case 1:
+            view = mHier;
+            break;
+        default:
+            view = mObjs;
+            break;
     }
 
     QString s;

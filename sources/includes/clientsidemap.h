@@ -26,12 +26,12 @@
 class ClientSideMap
 {
 //           Q_OBJECT
-public:
-    ClientSideMap(QTextStream& serverSideMap, QFile& file, const QString& tempDir);
-    ~ClientSideMap() {};
+    public:
+        ClientSideMap(QTextStream& serverSideMap, QFile& file, const QString& tempDir);
+        ~ClientSideMap() {};
 
-private:
-    ClientSideMap();
+    private:
+        ClientSideMap();
 };
 
 #endif

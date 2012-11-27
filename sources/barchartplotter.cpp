@@ -24,24 +24,27 @@ void BarChartPlotter::setBarSize(int min, int max)
 
 void BarChartPlotter::setBarScale(double scale)
 {
-    if (scale < 0.1)
+    if (scale < 0.1) {
         m_scale = 0.1;
-    else
+    } else {
         m_scale = qMin(scale, 1.0);
+    }
 }
 
 void BarChartPlotter::setBarOpacity(double value)
 {
-    if (value < 0.0)
+    if (value < 0.0) {
         m_opacity = 0;
-    else
+    } else {
         m_opacity = qMin(value, 1.0);
+    }
 }
 
 void BarChartPlotter::drawContent(QPainter &p)
 {
-    if (!m_model || !m_axisX || !m_axisY)
+    if (!m_model || !m_axisX || !m_axisY) {
         return;
+    }
 
     int p_start, p_end;
     m_axisX->calculatePoints(p_start, p_end);
@@ -50,25 +53,30 @@ void BarChartPlotter::drawContent(QPainter &p)
     p.drawLine(p_start, p_y, p_end, p_y);
 
     int count = m_model->columnCount();
-    if (!count)
+
+    if (!count) {
         return;
+    }
 
     int row_count = m_model->rowCount();
-    if (!row_count)
+
+    if (!row_count) {
         return;
+    }
 
     int p_offs = double(p_end - p_start) / count;
 
     int bar_size = p_offs * m_scale;
 
-    if (bar_size > m_barsize_max)
+    if (bar_size > m_barsize_max) {
         bar_size = qMin(m_barsize_max, p_offs);
-    else if (bar_size < m_barsize_min)
+    } else if (bar_size < m_barsize_min) {
         bar_size = qMin(m_barsize_min, p_offs);
+    }
 
 
     for (int i = 0; i < count; i++) {
-        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+        int p_d = p_start + p_offs * i + (p_offs - bar_size) / 2;
 
         double acc_value = 0;
         int p_y = m_axisY->toView(0);
@@ -91,16 +99,15 @@ void BarChartPlotter::drawContent(QPainter &p)
 
                 int p_h = m_axisY->toView(neg_value);
 
-                drawBarItem(p, QRect(p_d, p_ny, bar_size, p_h-p_ny), pen, brush, index, value);
+                drawBarItem(p, QRect(p_d, p_ny, bar_size, p_h - p_ny), pen, brush, index, value);
 
                 p_ny = p_h;
-            }
-            else {
+            } else {
                 acc_value += value;
 
                 int p_h = m_axisY->toView(acc_value);
 
-                drawBarItem(p, QRect(p_d, p_h, bar_size, p_y-p_h), pen, brush, index, value);
+                drawBarItem(p, QRect(p_d, p_h, bar_size, p_y - p_h), pen, brush, index, value);
 
                 p_y = p_h;
             }
@@ -111,8 +118,9 @@ void BarChartPlotter::drawContent(QPainter &p)
 
 bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
 {
-    if (!m_model || !m_axisX || !m_axisY)
+    if (!m_model || !m_axisX || !m_axisY) {
         return false;
+    }
 
     int p_start, p_end;
     m_axisX->calculatePoints(p_start, p_end);
@@ -120,29 +128,34 @@ bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
 //     int p_y = m_axisY->toView(0);
 
     int col_count = m_model->columnCount();
-    if (!col_count)
+
+    if (!col_count) {
         return false;
+    }
 
     int row_count = m_model->rowCount();
-    if (!row_count)
+
+    if (!row_count) {
         return false;
+    }
 
     int p_offs = double(p_end - p_start) / col_count;
 
     int bar_size = p_offs * m_scale;
 
-    if (bar_size > m_barsize_max)
+    if (bar_size > m_barsize_max) {
         bar_size = qMin(m_barsize_max, p_offs);
-    else if (bar_size < m_barsize_min)
+    } else if (bar_size < m_barsize_min) {
         bar_size = qMin(m_barsize_min, p_offs);
+    }
 
     int p_y = m_axisY->toView(m_axisY->rangeMininum());
     int p_h = m_axisY->toView(m_axisY->rangeMaximum());
 
     for (int i = 0; i < col_count; i++) {
-        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+        int p_d = p_start + p_offs * i + (p_offs - bar_size) / 2;
 
-        if ((p.x() >= p_d) && (p.x() <= (p_d+bar_size))) {
+        if ((p.x() >= p_d) && (p.x() <= (p_d + bar_size))) {
             name =  m_model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
             return true;
         }
@@ -154,8 +167,9 @@ bool BarChartPlotter::horItemNameAt(const QPoint &p, QString &name )
 
 bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
 {
-    if (!m_model || !m_axisX || !m_axisY)
+    if (!m_model || !m_axisX || !m_axisY) {
         return false;
+    }
 
     int p_start, p_end;
     m_axisX->calculatePoints(p_start, p_end);
@@ -163,25 +177,30 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
     int p_y = m_axisY->toView(0);
 
     int col_count = m_model->columnCount();
-    if (!col_count)
+
+    if (!col_count) {
         return false;
+    }
 
     int row_count = m_model->rowCount();
-    if (!row_count)
+
+    if (!row_count) {
         return false;
+    }
 
     int p_offs = double(p_end - p_start) / col_count;
 
     int bar_size = p_offs * m_scale;
 
-    if (bar_size > m_barsize_max)
+    if (bar_size > m_barsize_max) {
         bar_size = qMin(m_barsize_max, p_offs);
-    else if (bar_size < m_barsize_min)
+    } else if (bar_size < m_barsize_min) {
         bar_size = qMin(m_barsize_min, p_offs);
+    }
 
 
     for (int i = 0; i < col_count; i++) {
-        int p_d = p_start + p_offs*i + (p_offs-bar_size)/2;
+        int p_d = p_start + p_offs * i + (p_offs - bar_size) / 2;
 
         double acc_value = 0;
         int p_y = m_axisY->toView(0);
@@ -199,19 +218,20 @@ bool BarChartPlotter::indexAt(const QPoint &p, QModelIndex &idx )
 
                 int p_h = m_axisY->toView(neg_value);
 
-                QRect r(p_d, p_ny, bar_size, p_h-p_ny);
+                QRect r(p_d, p_ny, bar_size, p_h - p_ny);
+
                 if (r.contains(p) == true) {
                     idx = index;
                     return true;
                 }
 
                 p_ny = p_h;
-            }
-            else {
+            } else {
                 acc_value += value;
 
                 int p_h = m_axisY->toView(acc_value);
-                QRect r(p_d, p_h, bar_size, p_y-p_h);
+                QRect r(p_d, p_h, bar_size, p_y - p_h);
+
                 if (r.contains(p) == true) {
                     idx = index;
                     return true;

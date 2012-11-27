@@ -78,32 +78,40 @@ void CProfileViewItem::setTextInformation()
     this->setText(col_function, mProfile->name);
 
     switch(QProfWidget::sLastFileFormat) {
-    case    FORMAT_GPROF:
-        for (int i = col_count; i <= col_selfMsPerCall; i++) {
-            this->setData(i, Qt::DisplayRole, getText(i));
-        }
-        break;
+        case    FORMAT_GPROF:
 
-    case    FORMAT_FNCCHECK:
-        for (int i = col_count; i <= col_maxMsPerCall; i++) {
-            this->setData(i, Qt::DisplayRole, getText(i));
-        }
-        break;
+            for (int i = col_count; i <= col_selfMsPerCall; i++) {
+                this->setData(i, Qt::DisplayRole, getText(i));
+            }
 
-    case    FORMAT_POSE:
-        for (int i = col_count; i <= col_cumCycles; i++) {
-            this->setData(i, Qt::DisplayRole, getText(i));
-        }
-        break;
+            break;
 
-    case    FORMAT_CALLGRIND:
-        for (int i = col_count; i <= col_cumCycles; i++) {
-            this->setData(i, Qt::DisplayRole, getText(i));
-        }
-        break;
+        case    FORMAT_FNCCHECK:
 
-    default:
-        break;
+            for (int i = col_count; i <= col_maxMsPerCall; i++) {
+                this->setData(i, Qt::DisplayRole, getText(i));
+            }
+
+            break;
+
+        case    FORMAT_POSE:
+
+            for (int i = col_count; i <= col_cumCycles; i++) {
+                this->setData(i, Qt::DisplayRole, getText(i));
+            }
+
+            break;
+
+        case    FORMAT_CALLGRIND:
+
+            for (int i = col_count; i <= col_cumCycles; i++) {
+                this->setData(i, Qt::DisplayRole, getText(i));
+            }
+
+            break;
+
+        default:
+            break;
     }
 
     setRecursiveIcon ();
@@ -138,69 +146,69 @@ QString CProfileViewItem::getText (int column) const
     }
 
     switch (column) {
-    case col_function: {
-        CProfileViewItem *p = dynamic_cast<CProfileViewItem *> (parent ());
+        case col_function: {
+            CProfileViewItem *p = dynamic_cast<CProfileViewItem *> (parent ());
 
-        if (p && p->mProfile == NULL) {
-            // we are in a method of an object in the object
-            if (mProfile->multipleSignatures) {
-                return mProfile->name.right (mProfile->name.length () - mProfile->object.length() - 2);
+            if (p && p->mProfile == NULL) {
+                // we are in a method of an object in the object
+                if (mProfile->multipleSignatures) {
+                    return mProfile->name.right (mProfile->name.length () - mProfile->object.length() - 2);
+                }
+
+                return mProfile->method;
             }
 
-            return mProfile->method;
+            return mProfile->simplifiedName;
         }
 
-        return mProfile->simplifiedName;
-    }
+        case col_count:
+            return QString::number (mProfile->calls);
 
-    case col_count:
-        return QString::number (mProfile->calls);
+        case col_total:
+            return formatFloat (mProfile->cumSeconds, 3);
 
-    case col_total:
-        return formatFloat (mProfile->cumSeconds, 3);
+        case col_totalPercent:
+            return formatFloat (mProfile->cumPercent, 3);
 
-    case col_totalPercent:
-        return formatFloat (mProfile->cumPercent, 3);
+        case col_self:
+            return formatFloat (mProfile->selfSeconds, 3);
 
-    case col_self:
-        return formatFloat (mProfile->selfSeconds, 3);
+        case col_totalMsPerCall:
+            return formatFloat (mProfile->totalMsPerCall, 3);
 
-    case col_totalMsPerCall:
-        return formatFloat (mProfile->totalMsPerCall, 3);
+        default:
 
-    default:
+            if (QProfWidget::sLastFileFormat == FORMAT_GPROF) {
+                if (column == col_selfMsPerCall) {
+                    return formatFloat (mProfile->custom.gprof.selfMsPerCall, 3);
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_FNCCHECK) {
+                if (column == col_minMsPerCall) {
+                    return formatFloat (mProfile->custom.fnccheck.minMsPerCall, 3);
+                }
 
-        if (QProfWidget::sLastFileFormat == FORMAT_GPROF) {
-            if (column == col_selfMsPerCall) {
-                return formatFloat (mProfile->custom.gprof.selfMsPerCall, 3);
+                if (column == col_maxMsPerCall) {
+                    return formatFloat (mProfile->custom.fnccheck.maxMsPerCall, 3);
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                if (column == col_selfCycles) {
+                    return QString::number (mProfile->custom.callgrind.selfSamples);
+                }
+
+                if (column == col_cumCycles) {
+                    return QString::number (mProfile->custom.callgrind.cumSamples);
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
+                if (column == col_selfCycles) {
+                    return QString::number (mProfile->custom.pose.selfCycles);
+                }
+
+                if (column == col_cumCycles) {
+                    return QString::number (mProfile->custom.pose.cumCycles);
+                }
             }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_FNCCHECK) {
-            if (column == col_minMsPerCall) {
-                return formatFloat (mProfile->custom.fnccheck.minMsPerCall, 3);
-            }
 
-            if (column == col_maxMsPerCall) {
-                return formatFloat (mProfile->custom.fnccheck.maxMsPerCall, 3);
-            }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
-            if (column == col_selfCycles) {
-                return QString::number (mProfile->custom.callgrind.selfSamples);
-            }
-
-            if (column == col_cumCycles) {
-                return QString::number (mProfile->custom.callgrind.cumSamples);
-            }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
-            if (column == col_selfCycles) {
-                return QString::number (mProfile->custom.pose.selfCycles);
-            }
-
-            if (column == col_cumCycles) {
-                return QString::number (mProfile->custom.pose.cumCycles);
-            }
-        }
-
-        return "";
+            return "";
     }
 }
 
@@ -221,58 +229,59 @@ QString CProfileViewItem::key (int column, bool) const
     }
 
     switch (column) {
-    case col_function:
-        s = mProfile->name;
-        break;
+        case col_function:
+            s = mProfile->name;
+            break;
 
-    case col_count:
-        s.sprintf ("%014ld", mProfile->calls);
-        break;
+        case col_count:
+            s.sprintf ("%014ld", mProfile->calls);
+            break;
 
-    case col_total:
-        s.sprintf ("%014ld", (long) (mProfile->cumSeconds * 100.0));
-        break;
+        case col_total:
+            s.sprintf ("%014ld", (long) (mProfile->cumSeconds * 100.0));
+            break;
 
-    case col_totalPercent:
-        s.sprintf ("%05ld",  (long) (mProfile->cumPercent * 100.0));
-        break;
+        case col_totalPercent:
+            s.sprintf ("%05ld",  (long) (mProfile->cumPercent * 100.0));
+            break;
 
-    case col_self:
-        s.sprintf ("%014ld", (long) (mProfile->selfSeconds * 100.0));
-        break;
+        case col_self:
+            s.sprintf ("%014ld", (long) (mProfile->selfSeconds * 100.0));
+            break;
 
-    case col_totalMsPerCall:
-        s.sprintf ("%014ld", (long) (mProfile->totalMsPerCall * 100.0));
-        break;
+        case col_totalMsPerCall:
+            s.sprintf ("%014ld", (long) (mProfile->totalMsPerCall * 100.0));
+            break;
 
-    default:
+        default:
 
-        if (QProfWidget::sLastFileFormat == FORMAT_GPROF) {
-            if (column == col_selfMsPerCall) {
-                s.sprintf ("%014ld", (long) (mProfile->custom.gprof.selfMsPerCall * 100.0));
+            if (QProfWidget::sLastFileFormat == FORMAT_GPROF) {
+                if (column == col_selfMsPerCall) {
+                    s.sprintf ("%014ld", (long) (mProfile->custom.gprof.selfMsPerCall * 100.0));
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_FNCCHECK) {
+                if (column == col_minMsPerCall) {
+                    s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.minMsPerCall * 100.0));
+                } else if (column == col_maxMsPerCall) {
+                    s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.maxMsPerCall * 100.0));
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
+                if (column == col_selfCycles) {
+                    s.sprintf ("%014ld", mProfile->custom.callgrind.selfSamples);
+                } else if (column == col_cumCycles) {
+                    s.sprintf ("%014ld", mProfile->custom.callgrind.cumSamples);
+                }
+            } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
+                if (column == col_selfCycles) {
+                    s.sprintf ("%014ld", mProfile->custom.pose.selfCycles);
+                } else if (column == col_cumCycles) {
+                    s.sprintf ("%014ld", mProfile->custom.pose.cumCycles);
+                }
             }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_FNCCHECK) {
-            if (column == col_minMsPerCall) {
-                s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.minMsPerCall * 100.0));
-            } else if (column == col_maxMsPerCall) {
-                s.sprintf ("%014ld", (long) (mProfile->custom.fnccheck.maxMsPerCall * 100.0));
-            }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_CALLGRIND) {
-            if (column == col_selfCycles) {
-                s.sprintf ("%014ld", mProfile->custom.callgrind.selfSamples);
-            } else if (column == col_cumCycles) {
-                s.sprintf ("%014ld", mProfile->custom.callgrind.cumSamples);
-            }
-        } else if (QProfWidget::sLastFileFormat == FORMAT_POSE) {
-            if (column == col_selfCycles) {
-                s.sprintf ("%014ld", mProfile->custom.pose.selfCycles);
-            } else if (column == col_cumCycles) {
-                s.sprintf ("%014ld", mProfile->custom.pose.cumCycles);
-            }
-        }
 
-        break;
+            break;
     }
+
     return s;
 }
 

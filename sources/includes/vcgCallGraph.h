@@ -23,13 +23,13 @@ class CProfileInfo;
 
 class VCGCallGraph
 {
-public:
-    VCGCallGraph (QFile& file, bool currentSelectionOnly, QVector<CProfileInfo>& profile);
-    ~VCGCallGraph() {};
+    public:
+        VCGCallGraph (QFile& file, bool currentSelectionOnly, QVector<CProfileInfo>& profile);
+        ~VCGCallGraph() {};
 
-private:
+    private:
 
-    VCGCallGraph();
+        VCGCallGraph();
 };
 
 #endif

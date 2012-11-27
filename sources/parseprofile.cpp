@@ -60,6 +60,7 @@ void CParseProfile::processCallGraphBlock (const QVector<SCallGraphEntry> &data,
 
     for (i = 0; i < data.count (); i++) {
         CProfileInfo *p = locateProfileEntry (data[i].name, profile);
+
 // qDebug() << i << data[i].name;
         if (p == NULL) {
             break;
@@ -86,6 +87,7 @@ void CParseProfile::processCallGraphBlock (const QVector<SCallGraphEntry> &data,
             }
         }
     }
+
 //     qDebug() << primary->name << primary->called.count();
 }
 

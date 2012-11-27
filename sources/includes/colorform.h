@@ -25,15 +25,15 @@
 
 class colorForm : public QDialog, private Ui::colorPopUp
 {
-    Q_OBJECT
+        Q_OBJECT
 
-public:
-    colorForm(QWidget* parent = 0, Qt::WFlags fl = 0 );
-    ~colorForm();
+    public:
+        colorForm(QWidget* parent = 0, Qt::WFlags fl = 0 );
+        ~colorForm();
 
-public slots:
+    public slots:
 
-protected:
+    protected:
 
 };
 
